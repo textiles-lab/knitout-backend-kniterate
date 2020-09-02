@@ -1,0 +1,160 @@
+;!knitout-2
+;;Machine: SWG091N2
+;;Gauge: 15
+;;Carriers: 1 2 3 4 5 6 7 8 9 10
+
+x-stitch-number 85
+
+inhook 5
+
+tuck - f10 5
+tuck - f8 5
+tuck - f6 5
+tuck - f4 5
+tuck - f2 5
+miss - f1 5
+
+tuck + f1 5
+tuck + f3 5
+tuck + f5 5
+tuck + f7 5
+tuck + f9 5
+miss + f10 5
+
+stitch 25 40
+
+knit - f10 5
+knit - f9 5
+knit - f8 5
+knit - f7 5
+knit - f6 5
+knit - f5 5
+knit - f4 5
+knit - f3 5
+knit - f2 5
+knit - f1 5
+
+knit + f1 5
+knit + f2 5
+knit + f3 5
+knit + f4 5
+knit + f5 5
+knit + f6 5
+knit + f7 5
+knit + f8 5
+knit + f9 5
+knit + f10 5
+
+releasehook 5
+
+knit - f10 5
+knit - f9 5
+knit - f8 5
+knit - f7 5
+knit - f6 5
+knit - f5 5
+knit - f4 5
+knit - f3 5
+knit - f2 5
+knit - f1 5
+
+knit + f1 5
+knit + f2 5
+knit + f3 5
+knit + f4 5
+knit + f5 5
+knit + f6 5
+knit + f7 5
+knit + f8 5
+knit + f9 5
+knit + f10 5
+
+knit - f10 5
+knit - f9 5
+knit - f8 5
+knit - f7 5
+knit - f6 5
+knit - f5 5
+knit - f4 5
+knit - f3 5
+knit - f2 5
+knit - f1 5
+
+knit + f1 5
+knit + f2 5
+knit + f3 5
+knit + f4 5
+knit + f5 5
+knit + f6 5
+knit + f7 5
+knit + f8 5
+knit + f9 5
+knit + f10 5
+
+knit - f10 5
+knit - f9 5
+knit - f8 5
+knit - f7 5
+knit - f6 5
+knit - f5 5
+knit - f4 5
+knit - f3 5
+knit - f2 5
+knit - f1 5
+
+knit + f1 5
+knit + f2 5
+knit + f3 5
+knit + f4 5
+knit + f5 5
+knit + f6 5
+knit + f7 5
+knit + f8 5
+knit + f9 5
+knit + f10 5
+
+knit - f10 5
+knit - f9 5
+knit - f8 5
+knit - f7 5
+knit - f6 5
+knit - f5 5
+knit - f4 5
+knit - f3 5
+knit - f2 5
+knit - f1 5
+
+knit + f1 5
+knit + f2 5
+knit + f3 5
+knit + f4 5
+knit + f5 5
+knit + f6 5
+knit + f7 5
+knit + f8 5
+knit + f9 5
+knit + f10 5
+
+knit - f10 5
+knit - f9 5
+knit - f8 5
+knit - f7 5
+knit - f6 5
+knit - f5 5
+knit - f4 5
+knit - f3 5
+knit - f2 5
+knit - f1 5
+
+knit + f1 5
+knit + f2 5
+knit + f3 5
+knit + f4 5
+knit + f5 5
+knit + f6 5
+knit + f7 5
+knit + f8 5
+knit + f9 5
+knit + f10 5
+
+outhook 5
