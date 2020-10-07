@@ -1223,17 +1223,8 @@ let passes = [];
 	//call pass.add(...), if fails, make a new pass and call pass.add(...)
 })();
 
-let raster;
-//write array of passes into raster
-//TODO change this to generate ascii
-(function passesToRaster() {
-	//NOTE: testing shows that the option lines can be right up against the stopping colors; so we could remove some margin pixels there.
-	//padding relative to just the pass slots:
-	const LEFT_SPACE = 10 + 20*2 + 5;
-	const RIGHT_SPACE = 5 + 20*2 + 10;
-	const TOP_SPACE = 1 + 2 + 5;
-	const BOTTOM_SPACE = 5;
 
+(function passesToKCode() {
 	let minSlot = Infinity;
 	let maxSlot =-Infinity;
 	passes.forEach(function(pass){
@@ -1244,8 +1235,35 @@ let raster;
 		}
 		console.log(pass);
 	});
-})();
+	console.log(minSlot, maxSlot);
 
-(function passesToKCode() {
-// TODO write ascii output to file
+	//assume centered pattern:
+	function needleToSlot(n) {
+		const ofs = Math.floor(0.5 * (maxSlot + minSlot) - 0.5 * 252);
+		return n + ofs;
+	};
+
+
+	passes.forEach(function(pass){
+		let FRNT = '';
+		let REAR = '';
+		for (let i = 0; i < 15; ++i) {
+			FRNT += '.';
+			REAR += '.';
+		}
+		for (let n = 0; n <= 252; ++n) {
+			let s = needleToSlot(n);
+			if (s in pass.slots) {
+				
+			} else {
+				FRNT += '_';
+				REAR += '_';
+			}
+		}
+		for (let i = 0; i < 14; ++i) {
+			FRNT += '.';
+			REAR += '.';
+		}
+	});
+
 })();
