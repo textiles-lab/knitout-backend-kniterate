@@ -50,17 +50,17 @@ BedNeedle.prototype.isBack = function(){
 	else throw "Invalid bed in BedNeedle.";
 };
 
-BedNeedle.prototype.isHook = function(){
-	if (this.bed === 'f' || this.bed === 'b') return true;
-	else if (this.bed === 'fs' || this.bed === 'bs') return false;
-	else throw "Invalid bed in BedNeedle.";
-};
+// BedNeedle.prototype.isHook = function(){
+// 	if (this.bed === 'f' || this.bed === 'b') return true;
+// 	else if (this.bed === 'fs' || this.bed === 'bs') return false;
+// 	else throw "Invalid bed in BedNeedle.";
+// };
 
-BedNeedle.prototype.isSlider = function(){
-	if (this.bed === 'fs' || this.bed === 'bs') return true;
-	else if (this.bed === 'f' || this.bed === 'b') return false;
-	else throw "Invalid bed in BedNeedle.";
-};
+// BedNeedle.prototype.isSlider = function(){
+// 	if (this.bed === 'fs' || this.bed === 'bs') return true;
+// 	else if (this.bed === 'f' || this.bed === 'b') return false;
+// 	else throw "Invalid bed in BedNeedle.";
+// };
 
 //Carrier objects store information about each carrier:
 function Carrier(name) {
@@ -103,91 +103,100 @@ const MIN_STOPPING_DISTANCE = 10;
 const MAX_STOPPING_DISTANCE = 20;
 
 //special op, turns into a MISS if slot is unoccupied, or merges with knit/tuck/etc.
-const OP_SOFT_MISS = {color:16};
-
-const OP_MISS_FRONT = {color:216 /*bed:'f'*/}; //116 == front miss (with links process), 216 == front miss (independent carrier movement)
-const OP_MISS_BACK  = {color:217 /*bed:'b'*/}; //117 == back miss (with links process), 217 == back miss (independent carrier movement)
-//NOTE: this code sometimes uses 216/217 without independent carrier movement, at that seems to be okay(?!?)
-
-const OP_TUCK_FRONT = {color:11, isFront:true /*bed:'f'*/};
-const OP_TUCK_BACK	= {color:12, isBack:true /*bed:'b'*/};
-
-const OP_KNIT_FRONT = {color:51, isFront:true /*bed:'f'*/};
-const OP_KNIT_BACK	= {color:52, isBack:true /*bed:'b'*/};
-
-//combo ops:
-const OP_KNIT_FRONT_KNIT_BACK = {color:3, isFront:true, isBack:true};
-const OP_KNIT_FRONT_TUCK_BACK = {color:41, isFront:true, isBack:true};
-const OP_KNIT_FRONT_MISS_BACK = {color:OP_KNIT_FRONT.color, isFront:true};
-const OP_TUCK_FRONT_KNIT_BACK = {color:42, isFront:true, isBack:true};
-const OP_TUCK_FRONT_TUCK_BACK = {color:88, isFront:true, isBack:true};
-const OP_TUCK_FRONT_MISS_BACK = {color:OP_TUCK_FRONT.color, isFront:true};
-const OP_MISS_FRONT_KNIT_BACK = {color:OP_KNIT_BACK.color, isBack:true};
-const OP_MISS_FRONT_TUCK_BACK = {color:OP_TUCK_BACK.color, isBack:true};
-const OP_MISS_FRONT_MISS_BACK = {color:16};
-
-const OP_XFER_TO_BACK = {color:20};
-const OP_XFER_TO_FRONT = {color:30};
-
-const OP_SPLIT_TO_BACK = {color:101};
-const OP_SPLIT_TO_FRONT = {color:102};
-
-const OP_SPLIT_FRONT_TO_FRONT_VIA_SLIDER_L1 = {color:106};
-const OP_SPLIT_FRONT_TO_FRONT_VIA_SLIDER_R1 = {color:107};
-const OP_SPLIT_BACK_TO_BACK_VIA_SLIDER_L1 = {color:108};
-const OP_SPLIT_BACK_TO_BACK_VIA_SLIDER_R1 = {color:109};
-
-const OP_SPLIT_FRONT_TO_FRONT_VIA_SLIDER_L2 = {color:126};
-const OP_SPLIT_FRONT_TO_FRONT_VIA_SLIDER_R2 = {color:127};
-const OP_SPLIT_BACK_TO_BACK_VIA_SLIDER_L2 = {color:128};
-const OP_SPLIT_BACK_TO_BACK_VIA_SLIDER_R2 = {color:129};
-
-const OP_SPLIT_FRONT_TO_FRONT_VIA_SLIDER_L4 = {color:146};
-const OP_SPLIT_FRONT_TO_FRONT_VIA_SLIDER_R4 = {color:147};
-const OP_SPLIT_BACK_TO_BACK_VIA_SLIDER_L4 = {color:148};
-const OP_SPLIT_BACK_TO_BACK_VIA_SLIDER_R4 = {color:149};
+// const OP_SOFT_MISS = { color: 16 };
+const OP_MISS = { symbol: '_' };
+const OP_SELECT = { symbol: '-' };
+const KNIT_KNIT = { symbol: 'Kn-Kn' };
+//TO-DO add others
 
 
-//return a combined operation that does 'a' then 'b' (moving right), or null of such a thing doesn't exist
-function merge_ops(a,b,quarterPitch) {
-	//soft miss will always be replaced by another operation in the same slot:
-	if (a === OP_SOFT_MISS) {
-		return b;
-	} else if (b === OP_SOFT_MISS) {
-		return a;
-	}
-	//see if a/b fit one of the combo ops:
-	if (!quarterPitch) return null; //can't merge front/back ops without quarter pitch racking
-	if (a === OP_MISS_FRONT) {
-		if      (b === OP_MISS_BACK) return OP_MISS_FRONT_MISS_BACK;
-		else if (b === OP_TUCK_BACK) return OP_MISS_FRONT_TUCK_BACK;
-		else if (b === OP_KNIT_BACK) return OP_MISS_FRONT_KNIT_BACK;
-	} else if (a === OP_TUCK_FRONT) {
-		if      (b === OP_MISS_BACK) return OP_TUCK_FRONT_MISS_BACK;
-		else if (b === OP_TUCK_BACK) return OP_TUCK_FRONT_TUCK_BACK;
-		else if (b === OP_KNIT_BACK) return OP_TUCK_FRONT_KNIT_BACK;
-	} else if (a === OP_KNIT_FRONT) {
-		if      (b === OP_MISS_BACK) return OP_KNIT_FRONT_MISS_BACK;
-		else if (b === OP_TUCK_BACK) return OP_KNIT_FRONT_TUCK_BACK;
-		else if (b === OP_KNIT_BACK) return OP_KNIT_FRONT_KNIT_BACK;
-	}
-	//I guess they can't be combined:
-	return null;
-}
+// const OP_MISS_FRONT = {color:216 /*bed:'f'*/}; //116 == front miss (with links process), 216 == front miss (independent carrier movement)
+// const OP_MISS_BACK  = {color:217 /*bed:'b'*/}; //117 == back miss (with links process), 217 == back miss (independent carrier movement)
+// //NOTE: this code sometimes uses 216/217 without independent carrier movement, at that seems to be okay(?!?)
+
+// const OP_TUCK_FRONT = {color:11, isFront:true /*bed:'f'*/};
+// const OP_TUCK_BACK	= {color:12, isBack:true /*bed:'b'*/};
+
+// const OP_KNIT_FRONT = {color:51, isFront:true /*bed:'f'*/};
+// const OP_KNIT_BACK	= {color:52, isBack:true /*bed:'b'*/};
+
+// //combo ops:
+// const OP_KNIT_FRONT_KNIT_BACK = {color:3, isFront:true, isBack:true};
+// const OP_KNIT_FRONT_TUCK_BACK = {color:41, isFront:true, isBack:true};
+// const OP_KNIT_FRONT_MISS_BACK = {color:OP_KNIT_FRONT.color, isFront:true};
+// const OP_TUCK_FRONT_KNIT_BACK = {color:42, isFront:true, isBack:true};
+// const OP_TUCK_FRONT_TUCK_BACK = {color:88, isFront:true, isBack:true};
+// const OP_TUCK_FRONT_MISS_BACK = {color:OP_TUCK_FRONT.color, isFront:true};
+// const OP_MISS_FRONT_KNIT_BACK = {color:OP_KNIT_BACK.color, isBack:true};
+// const OP_MISS_FRONT_TUCK_BACK = {color:OP_TUCK_BACK.color, isBack:true};
+// const OP_MISS_FRONT_MISS_BACK = {color:16};
+
+// const OP_XFER_TO_BACK = {color:20};
+// const OP_XFER_TO_FRONT = {color:30};
+
+// const OP_SPLIT_TO_BACK = {color:101};
+// const OP_SPLIT_TO_FRONT = {color:102};
+
+// const OP_SPLIT_FRONT_TO_FRONT_VIA_SLIDER_L1 = {color:106};
+// const OP_SPLIT_FRONT_TO_FRONT_VIA_SLIDER_R1 = {color:107};
+// const OP_SPLIT_BACK_TO_BACK_VIA_SLIDER_L1 = {color:108};
+// const OP_SPLIT_BACK_TO_BACK_VIA_SLIDER_R1 = {color:109};
+
+// const OP_SPLIT_FRONT_TO_FRONT_VIA_SLIDER_L2 = {color:126};
+// const OP_SPLIT_FRONT_TO_FRONT_VIA_SLIDER_R2 = {color:127};
+// const OP_SPLIT_BACK_TO_BACK_VIA_SLIDER_L2 = {color:128};
+// const OP_SPLIT_BACK_TO_BACK_VIA_SLIDER_R2 = {color:129};
+
+// const OP_SPLIT_FRONT_TO_FRONT_VIA_SLIDER_L4 = {color:146};
+// const OP_SPLIT_FRONT_TO_FRONT_VIA_SLIDER_R4 = {color:147};
+// const OP_SPLIT_BACK_TO_BACK_VIA_SLIDER_L4 = {color:148};
+// const OP_SPLIT_BACK_TO_BACK_VIA_SLIDER_R4 = {color:149};
+
+
+// //return a combined operation that does 'a' then 'b' (moving right), or null of such a thing doesn't exist
+// function merge_ops(a,b,quarterPitch) {
+// 	//soft miss will always be replaced by another operation in the same slot:
+// 	if (a === OP_SOFT_MISS) {
+// 		return b;
+// 	} else if (b === OP_SOFT_MISS) {
+// 		return a;
+// 	}
+// 	//see if a/b fit one of the combo ops:
+// 	if (!quarterPitch) return null; //can't merge front/back ops without quarter pitch racking
+// 	if (a === OP_MISS_FRONT) {
+// 		if      (b === OP_MISS_BACK) return OP_MISS_FRONT_MISS_BACK;
+// 		else if (b === OP_TUCK_BACK) return OP_MISS_FRONT_TUCK_BACK;
+// 		else if (b === OP_KNIT_BACK) return OP_MISS_FRONT_KNIT_BACK;
+// 	} else if (a === OP_TUCK_FRONT) {
+// 		if      (b === OP_MISS_BACK) return OP_TUCK_FRONT_MISS_BACK;
+// 		else if (b === OP_TUCK_BACK) return OP_TUCK_FRONT_TUCK_BACK;
+// 		else if (b === OP_KNIT_BACK) return OP_TUCK_FRONT_KNIT_BACK;
+// 	} else if (a === OP_KNIT_FRONT) {
+// 		if      (b === OP_MISS_BACK) return OP_KNIT_FRONT_MISS_BACK;
+// 		else if (b === OP_TUCK_BACK) return OP_KNIT_FRONT_TUCK_BACK;
+// 		else if (b === OP_KNIT_BACK) return OP_KNIT_FRONT_KNIT_BACK;
+// 	}
+// 	//I guess they can't be combined:
+// 	return null;
+// }
+//TO-DO add logic than ensures that pass direction changes if racking is not 0.5 & try to knit i.e. f1 & b1; otherwise, add to pass (assuming other conditions = true)
 
 //different pass types:
+//TO-DO define kn-kn etc. here (leave _ and - symbols)
+//remember that knit_tuck doesn't refer to front & back (just knit or tuck in same pass)
 const TYPE_KNIT_TUCK = 'knit-tuck';
 const TYPE_A_MISS = 'a-miss';
-const TYPE_SPLIT = 'split';
-const TYPE_SPLIT_VIA_SLIDERS = 'split-via-sliders';
+//a-miss = tuck without yarn carrier
+// const TYPE_SPLIT = 'split';
+// const TYPE_SPLIT_VIA_SLIDERS = 'split-via-sliders';
 const TYPE_XFER = 'xfer';
-const TYPE_XFER_TO_SLIDERS = 'xfer-to-sliders';
-const TYPE_XFER_FROM_SLIDERS = 'xfer-from-sliders';
+// const TYPE_XFER_TO_SLIDERS = 'xfer-to-sliders';
+// const TYPE_XFER_FROM_SLIDERS = 'xfer-from-sliders';
 
-//different pass yarn hook actions:
-const HOOK_IN = 'hook-in'; //bring in yarn using hook before pass starts (GRIPPER_IN must also be set)
-const HOOK_RELEASE = 'hook-release'; //release yarn from hook *before the pass starts* (tested on machine)
-const HOOK_OUT = 'hook-out'; //bring yarn out using hook after pass ends (GRIPPER_OUT must also be set)
+// //different pass yarn hook actions:
+// const HOOK_IN = 'hook-in'; //bring in yarn using hook before pass starts (GRIPPER_IN must also be set)
+// const HOOK_RELEASE = 'hook-release'; //release yarn from hook *before the pass starts* (tested on machine)
+// const HOOK_OUT = 'hook-out'; //bring yarn out using hook after pass ends (GRIPPER_OUT must also be set)
 
 //different pass yarn gripper actions:
 const GRIPPER_IN = 'gripper-in'; //bring yarn in from gripper (inhook will also set HOOK_IN)
@@ -202,14 +211,14 @@ const DIRECTION_NONE = '';
 function Pass(info) {
 	//type: one of the TYPE_* constants (REQUIRED)
 	//racking: number giving racking (REQUIRED)
-	//stitch: number giving stitch (REQUIRED)
+	//DELETED//stitch: number giving stitch (REQUIRED)
 	//slots: raster index -> operation
 	//direction: one of the DIRECTION_* constants
 	//carriers: array of carriers, possibly of zero length
-	//hook: one of the HOOK_* constants or undefined
+	//DELETED//hook: one of the HOOK_* constants or undefined
 	//gripper: one of the GRIPPER_* constants or undefined
-	//presserMode: 'off', 'on', or 'auto'
-	['type', 'slots', 'direction', 'carriers', 'hook', 'gripper', 'racking', 'pause', 'stitch', 'speed', 'presserMode'].forEach(function(name){
+	//DELETED//presserMode: 'off', 'on', or 'auto'
+	['type', 'slots', 'direction', 'carriers', 'gripper', 'racking', 'pause', 'speed'].forEach(function(name){
 		if (name in info) this[name] = info[name];
 	}, this);
 	if (!('slots' in this)) this.slots = {};
@@ -218,48 +227,37 @@ function Pass(info) {
 	//Check that specification was reasonable:
 	console.assert('type' in this, "Can't specify a pass without a type.");
 	console.assert('racking' in this, "Can't specify a pass without a racking.");
-	console.assert('stitch' in this, "Can't specify a pass without a stitch value.");
 	console.assert('speed' in this, "Can't specify a pass without a speed value.");
 
-	if (this.type === TYPE_KNIT_TUCK) {
-		if ('gripper' in this) {
-			console.assert(this.carriers.length !== 0, "Using GRIPPER_* with no carriers doesn't make sense.");
-			if (this.gripper === GRIPPER_IN) {
-				console.assert(!('hook' in this) || this.hook === HOOK_IN, "Must use GRIPPER_IN with HOOK_IN.");
-			} else if (this.gripper === GRIPPER_OUT) {
-				console.assert(!('hook' in this) || this.hook === HOOK_OUT, "Must use GRIPPER_OUT with HOOK_OUT.");
-			} else {
-				console.assert(false, "Pass gripper must be one of the GRIPPER_* constants.");
-			}
-		}
-		if ('hook' in this) {
-			if (this.hook === HOOK_IN) {
-				console.assert(this.carriers.length !== 0, "Using HOOK_IN with no carriers doesn't make sense.");
-			} else if (this.hook === HOOK_RELEASE) {
-				//HOOK_RELEASE can work with any carriers
-			} else if (this.hook === HOOK_OUT) {
-				console.assert(this.carriers.length !== 0, "Using HOOK_OUT with no carriers doesn't make sense.");
-			} else {
-				console.assert(false, "Pass hook must be one of the HOOK_* constants.");
-			}
-		}
-	} else if (this.type === TYPE_SPLIT || this.type == TYPE_SPLIT_VIA_SLIDERS) {
-		//not clear if these are actually restrictions:
-		console.assert(!('gripper' in this), "Must use gripper only on KNIT_TUCK pass.");
-		console.assert(!('hook' in this), "Must use hook only on KNIT_TUCK pass.");
-		console.assert(this.carriers.length > 0, "Split passes should have yarn.");
-	} else if (this.type === TYPE_XFER || this.type === TYPE_XFER_TO_SLIDERS || this.type === TYPE_XFER_FROM_SLIDERS) {
-		console.assert(!('gripper' in this), "Must use gripper only on KNIT_TUCK pass.");
-		console.assert(!('hook' in this), "Must use hook only on KNIT_TUCK pass.");
-		console.assert(this.carriers.length === 0, "Transfer passes cannot have carriers specified.");
-		console.assert(!('presserMode' in this), "Transfer passes cannot have a presser mode.");
-	} else {
-		console.assert(false, "Pass type must be one of the TYPE_* constants.");
-	}
+  //TO-DO pass sanity check
+	// if (this.type === TYPE_KNIT_TUCK) {
+	// 	if ('gripper' in this) {
+	// 		console.assert(this.carriers.length !== 0, "Using GRIPPER_* with no carriers doesn't make sense.");
+	// 		if (this.gripper === GRIPPER_IN) {
+	// 			console.assert(!('hook' in this) || this.hook === HOOK_IN, "Must use GRIPPER_IN with HOOK_IN.");
+	// 		} else if (this.gripper === GRIPPER_OUT) {
+	// 			console.assert(!('hook' in this) || this.hook === HOOK_OUT, "Must use GRIPPER_OUT with HOOK_OUT.");
+	// 		} else {
+	// 			console.assert(false, "Pass gripper must be one of the GRIPPER_* constants.");
+	// 		}
+	// 	}
+	// } else if (this.type === TYPE_SPLIT || this.type == TYPE_SPLIT_VIA_SLIDERS) {
+	// 	//not clear if these are actually restrictions:
+	// 	console.assert(!('gripper' in this), "Must use gripper only on KNIT_TUCK pass.");
+	// 	console.assert(!('hook' in this), "Must use hook only on KNIT_TUCK pass.");
+	// 	console.assert(this.carriers.length > 0, "Split passes should have yarn.");
+	// } else if (this.type === TYPE_XFER || this.type === TYPE_XFER_TO_SLIDERS || this.type === TYPE_XFER_FROM_SLIDERS) {
+	// 	console.assert(!('gripper' in this), "Must use gripper only on KNIT_TUCK pass.");
+	// 	console.assert(!('hook' in this), "Must use hook only on KNIT_TUCK pass.");
+	// 	console.assert(this.carriers.length === 0, "Transfer passes cannot have carriers specified.");
+	// 	console.assert(!('presserMode' in this), "Transfer passes cannot have a presser mode.");
+	// } else {
+	// 	console.assert(false, "Pass type must be one of the TYPE_* constants.");
+	// }
 
-	if (this.type == TYPE_SPLIT_VIA_SLIDERS) {
-		this.pendingReturn = {};
-	}
+	// if (this.type == TYPE_SPLIT_VIA_SLIDERS) {
+	// 	this.pendingReturn = {};
+	// }
 }
 
 Pass.prototype.hasFront = function() {
@@ -295,28 +293,28 @@ Pass.prototype.append = function(pass) {
 		return false;
 	}
 
-	//Make sure presser mode matches (TODO: cold probably be more clever about merging 'auto' and 'on'/'off' passes):
-	if (('presserMode' in this) && ('presserMode' in pass) && this.presserMode !== pass.presserMode) {
-		return false;
-	}
-	if (this.presserMode === 'on') {
-		console.assert(!(this.hasFront() && this.hasBack()), "Presser mode can't be on in a mixed front/back pass.");
-		if (this.hasFront() && pass.hasBack()) return false;
-		if (this.hasBack() && pass.hasFront()) return false;
-		if (pass.hook) return false;
-	}
+	// //Make sure presser mode matches (TODO: cold probably be more clever about merging 'auto' and 'on'/'off' passes):
+	// if (('presserMode' in this) && ('presserMode' in pass) && this.presserMode !== pass.presserMode) {
+	// 	return false;
+	// }
+	// if (this.presserMode === 'on') {
+	// 	console.assert(!(this.hasFront() && this.hasBack()), "Presser mode can't be on in a mixed front/back pass.");
+	// 	if (this.hasFront() && pass.hasBack()) return false;
+	// 	if (this.hasBack() && pass.hasFront()) return false;
+	// 	if (pass.hook) return false;
+	// }
 
-	//it is okay to merge hook operations in a few cases:
-	if (!('hook' in this) && !('hook' in pass)) {
-		//hook in neither is fine
-	} else if ((this.hook === HOOK_IN || this.hook == HOOK_RELEASE) && !('hook' in pass)) {
-		//in or release at the start of the current pass is fine
-	} else if (!('hook' in this) && pass.hook === HOOK_OUT) {
-		//out or release at the end of the next pass is fine
-	} else {
-		//hook operations are in conflict
-		return false;
-	}
+	// //it is okay to merge hook operations in a few cases:
+	// if (!('hook' in this) && !('hook' in pass)) {
+	// 	//hook in neither is fine
+	// } else if ((this.hook === HOOK_IN || this.hook == HOOK_RELEASE) && !('hook' in pass)) {
+	// 	//in or release at the start of the current pass is fine
+	// } else if (!('hook' in this) && pass.hook === HOOK_OUT) {
+	// 	//out or release at the end of the next pass is fine
+	// } else {
+	// 	//hook operations are in conflict
+	// 	return false;
+	// }
 
 	//it is okay to merge gripper operations in a few cases:
 	if (!('gripper' in this) && !('gripper' in pass)) {
@@ -330,7 +328,8 @@ Pass.prototype.append = function(pass) {
 		return false;
 	}
 
-	//must have a free slot for the new operation(s):
+  //must have a free slot for the new operation(s):
+  //TO-DO change to halfPitch
 	let quarterPitch = (this.racking - Math.floor(this.racking) != 0.0);
 	if (this.direction === DIRECTION_RIGHT) {
 		//new operation needs to be to the right of other operations.
@@ -386,17 +385,17 @@ Pass.prototype.append = function(pass) {
 
 	//---- actually merge next pass ----
 
-	//merge presserMode:
-	if ('presserMode' in pass) {
-		this.presserMode = pass.presserMode;
-	}
+	// //merge presserMode:
+	// if ('presserMode' in pass) {
+	// 	this.presserMode = pass.presserMode;
+	// }
 
-	//merge hook properties:
-	if (!('hook' in this) && ('hook' in pass)) {
-		this.hook = pass.hook;
-	} else {
-		console.assert(!('hook' in pass), "we checked this");
-	}
+	// //merge hook properties:
+	// if (!('hook' in this) && ('hook' in pass)) {
+	// 	this.hook = pass.hook;
+	// } else {
+	// 	console.assert(!('hook' in pass), "we checked this");
+	// }
 	//merge gripper properties:
 	if (!('gripper' in this) && ('gripper' in pass)) {
 		this.gripper = pass.gripper;
@@ -490,7 +489,7 @@ let passes = [];
 				if (/^\d+\.?\d*$/.test(value) && parseFloat(value) > 0) {
 					headers.Gauge = parseFloat(value);
 				} else {
-					throw "ERROR: Guage header's value ('" + value + "') should be a number greater than zero.";
+					throw "ERROR: Gauge header's value ('" + value + "') should be a number greater than zero.";
 				}
 			} else if (header === 'Width') {
 				if (/^\d+$/.test(value) && parseInt(value) > 0) {
@@ -521,7 +520,7 @@ let passes = [];
 
 		//Set default 'Width' if not specified + report current value:
 		if (!('Width' in headers)) {
-			headers.Width = 540;
+			headers.Width = 252;
 			console.log("Width header not specified. Assuming beds are " + headers.Width + " needles wide.");
 		} else {
 			console.log("Width header indicates beds are " + headers.Width + " needles wide.");
@@ -549,7 +548,7 @@ let passes = [];
 	let stitch = 5; //machine-specific stitch number
 	let xferStitch = 0; //machine-specific stitch number for transfers; 0 => default
 	let speed = 0; //machine-specific speed number
-	let presserMode = "off"; //fabric presser mode, one of 'on', 'off', or 'auto'
+	// let presserMode = "off"; //fabric presser mode, one of 'on', 'off', or 'auto'
 	let pausePending = false; //optional stop before next instruction, please
 
 	//if doing a split-via-sliders operation, svs looks like:
