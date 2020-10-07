@@ -99,108 +99,110 @@ const STITCH_NUMBERS = {
 };
 
 //these give the expected range of stopping distances:
-const MIN_STOPPING_DISTANCE = 10;
-const MAX_STOPPING_DISTANCE = 20;
+const MIN_STOPPING_DISTANCE = 4;
+const MAX_STOPPING_DISTANCE = 6;
 
-//special op, turns into a MISS if slot is unoccupied, or merges with knit/tuck/etc.
-// const OP_SOFT_MISS = { color: 16 };
-const OP_MISS = { symbol: '_' };
-const OP_SELECT = { symbol: '-' };
-const KNIT_KNIT = { symbol: 'Kn-Kn' };
-//TO-DO add others
+//special op, merges with knit/tuck/etc:
+const OP_SOFT_MISS = { name:'OP_SOFT_MISS' };
 
+const OP_TUCK_FRONT = { name:'OP_TUCK_FRONT', isFront:true };
+const OP_TUCK_BACK  = { name:'OP_TUCK_BACK',  isBack:true };
 
-// const OP_MISS_FRONT = {color:216 /*bed:'f'*/}; //116 == front miss (with links process), 216 == front miss (independent carrier movement)
-// const OP_MISS_BACK  = {color:217 /*bed:'b'*/}; //117 == back miss (with links process), 217 == back miss (independent carrier movement)
-// //NOTE: this code sometimes uses 216/217 without independent carrier movement, at that seems to be okay(?!?)
+const OP_KNIT_FRONT = { name:'OP_KNIT_FRONT', isFront:true };
+const OP_KNIT_BACK  = { name:'OP_KNIT_BAACK', isBack:true };
 
-// const OP_TUCK_FRONT = {color:11, isFront:true /*bed:'f'*/};
-// const OP_TUCK_BACK	= {color:12, isBack:true /*bed:'b'*/};
+//combo ops:
+const OP_KNIT_FRONT_KNIT_BACK = { name:'OP_KNIT_FRONT_KNIT_BACK', isFront:true, isBack:true };
+const OP_KNIT_FRONT_TUCK_BACK = { name:'OP_KNIT_FRONT_TUCK_BACK', isFront:true, isBack:true };
+const OP_KNIT_FRONT_MISS_BACK = { name:'OP_KNIT_FRONT_MISS_BACK', isFront:true };
+const OP_TUCK_FRONT_KNIT_BACK = { name:'OP_TUCK_FRONT_KNIT_BACK', isFront:true, isBack:true };
+const OP_TUCK_FRONT_TUCK_BACK = { name:'OP_TUCK_FRONT_TUCK_BACK', isFront:true, isBack:true };
+const OP_TUCK_FRONT_MISS_BACK = { name:'OP_TUCK_FRONT_MISS_BACK', isFront:true };
+const OP_MISS_FRONT_KNIT_BACK = { name:'OP_MISS_FRONT_KNIT_BACK', isBack:true };
+const OP_MISS_FRONT_TUCK_BACK = { name:'OP_MISS_FRONT_TUCK_BACK', isBack:true };
+const OP_MISS_FRONT_MISS_BACK = { name:'OP_MISS_FRONT_MISS_BACK' };
 
-// const OP_KNIT_FRONT = {color:51, isFront:true /*bed:'f'*/};
-// const OP_KNIT_BACK	= {color:52, isBack:true /*bed:'b'*/};
+const OP_XFER_TO_BACK  = { name:'OP_XFER_TO_BACK' };
+const OP_XFER_TO_FRONT = { name:'OP_XFER_TO_FRONT' };
 
-// //combo ops:
-// const OP_KNIT_FRONT_KNIT_BACK = {color:3, isFront:true, isBack:true};
-// const OP_KNIT_FRONT_TUCK_BACK = {color:41, isFront:true, isBack:true};
-// const OP_KNIT_FRONT_MISS_BACK = {color:OP_KNIT_FRONT.color, isFront:true};
-// const OP_TUCK_FRONT_KNIT_BACK = {color:42, isFront:true, isBack:true};
-// const OP_TUCK_FRONT_TUCK_BACK = {color:88, isFront:true, isBack:true};
-// const OP_TUCK_FRONT_MISS_BACK = {color:OP_TUCK_FRONT.color, isFront:true};
-// const OP_MISS_FRONT_KNIT_BACK = {color:OP_KNIT_BACK.color, isBack:true};
-// const OP_MISS_FRONT_TUCK_BACK = {color:OP_TUCK_BACK.color, isBack:true};
-// const OP_MISS_FRONT_MISS_BACK = {color:16};
-
-// const OP_XFER_TO_BACK = {color:20};
-// const OP_XFER_TO_FRONT = {color:30};
-
-// const OP_SPLIT_TO_BACK = {color:101};
-// const OP_SPLIT_TO_FRONT = {color:102};
-
-// const OP_SPLIT_FRONT_TO_FRONT_VIA_SLIDER_L1 = {color:106};
-// const OP_SPLIT_FRONT_TO_FRONT_VIA_SLIDER_R1 = {color:107};
-// const OP_SPLIT_BACK_TO_BACK_VIA_SLIDER_L1 = {color:108};
-// const OP_SPLIT_BACK_TO_BACK_VIA_SLIDER_R1 = {color:109};
-
-// const OP_SPLIT_FRONT_TO_FRONT_VIA_SLIDER_L2 = {color:126};
-// const OP_SPLIT_FRONT_TO_FRONT_VIA_SLIDER_R2 = {color:127};
-// const OP_SPLIT_BACK_TO_BACK_VIA_SLIDER_L2 = {color:128};
-// const OP_SPLIT_BACK_TO_BACK_VIA_SLIDER_R2 = {color:129};
-
-// const OP_SPLIT_FRONT_TO_FRONT_VIA_SLIDER_L4 = {color:146};
-// const OP_SPLIT_FRONT_TO_FRONT_VIA_SLIDER_R4 = {color:147};
-// const OP_SPLIT_BACK_TO_BACK_VIA_SLIDER_L4 = {color:148};
-// const OP_SPLIT_BACK_TO_BACK_VIA_SLIDER_R4 = {color:149};
-
-
-// //return a combined operation that does 'a' then 'b' (moving right), or null of such a thing doesn't exist
-// function merge_ops(a,b,quarterPitch) {
-// 	//soft miss will always be replaced by another operation in the same slot:
-// 	if (a === OP_SOFT_MISS) {
-// 		return b;
-// 	} else if (b === OP_SOFT_MISS) {
-// 		return a;
-// 	}
-// 	//see if a/b fit one of the combo ops:
-// 	if (!quarterPitch) return null; //can't merge front/back ops without quarter pitch racking
-// 	if (a === OP_MISS_FRONT) {
-// 		if      (b === OP_MISS_BACK) return OP_MISS_FRONT_MISS_BACK;
-// 		else if (b === OP_TUCK_BACK) return OP_MISS_FRONT_TUCK_BACK;
-// 		else if (b === OP_KNIT_BACK) return OP_MISS_FRONT_KNIT_BACK;
-// 	} else if (a === OP_TUCK_FRONT) {
-// 		if      (b === OP_MISS_BACK) return OP_TUCK_FRONT_MISS_BACK;
-// 		else if (b === OP_TUCK_BACK) return OP_TUCK_FRONT_TUCK_BACK;
-// 		else if (b === OP_KNIT_BACK) return OP_TUCK_FRONT_KNIT_BACK;
-// 	} else if (a === OP_KNIT_FRONT) {
-// 		if      (b === OP_MISS_BACK) return OP_KNIT_FRONT_MISS_BACK;
-// 		else if (b === OP_TUCK_BACK) return OP_KNIT_FRONT_TUCK_BACK;
-// 		else if (b === OP_KNIT_BACK) return OP_KNIT_FRONT_KNIT_BACK;
-// 	}
-// 	//I guess they can't be combined:
-// 	return null;
-// }
+//return a combined operation that does 'a' then 'b' (moving right), or null if such a thing doesn't exist
+function merge_ops(a,b,quarterPitch) {
+	//soft miss will always be replaced by another operation in the same slot:
+	if (a === OP_SOFT_MISS) {
+		return b;
+	} else if (b === OP_SOFT_MISS) {
+		return a;
+	}
+	//see if a/b fit one of the combo ops:
+	if (!quarterPitch) return null; //can't merge front/back ops without quarter pitch racking
+	if (a === OP_MISS_FRONT) {
+		if      (b === OP_MISS_BACK) return OP_MISS_FRONT_MISS_BACK;
+		else if (b === OP_TUCK_BACK) return OP_MISS_FRONT_TUCK_BACK;
+		else if (b === OP_KNIT_BACK) return OP_MISS_FRONT_KNIT_BACK;
+	} else if (a === OP_TUCK_FRONT) {
+		if      (b === OP_MISS_BACK) return OP_TUCK_FRONT_MISS_BACK;
+		else if (b === OP_TUCK_BACK) return OP_TUCK_FRONT_TUCK_BACK;
+		else if (b === OP_KNIT_BACK) return OP_TUCK_FRONT_KNIT_BACK;
+	} else if (a === OP_KNIT_FRONT) {
+		if      (b === OP_MISS_BACK) return OP_KNIT_FRONT_MISS_BACK;
+		else if (b === OP_TUCK_BACK) return OP_KNIT_FRONT_TUCK_BACK;
+		else if (b === OP_KNIT_BACK) return OP_KNIT_FRONT_KNIT_BACK;
+	}
+	//I guess they can't be combined:
+	return null;
+}
 //TO-DO add logic than ensures that pass direction changes if racking is not 0.5 & try to knit i.e. f1 & b1; otherwise, add to pass (assuming other conditions = true)
 
 //different pass types:
 //TO-DO define kn-kn etc. here (leave _ and - symbols)
-//remember that knit_tuck doesn't refer to front & back (just knit or tuck in same pass)
-const TYPE_KNIT_TUCK = 'knit-tuck';
-const TYPE_A_MISS = 'a-miss';
-//a-miss = tuck without yarn carrier
-// const TYPE_SPLIT = 'split';
-// const TYPE_SPLIT_VIA_SLIDERS = 'split-via-sliders';
-const TYPE_XFER = 'xfer';
-// const TYPE_XFER_TO_SLIDERS = 'xfer-to-sliders';
-// const TYPE_XFER_FROM_SLIDERS = 'xfer-from-sliders';
+const TYPE_SOFT_MISS = {}; //pass that exists only to host SOFT_MISS stitches, which can merge with knit or tuck passes
+const TYPE_KNIT_x = {kcode:'Kn-Kn'};
+const TYPE_x_KNIT = {kcode:'Kn-Kn'};
+const TYPE_TUCK_x = {kcode:'Tu-Tu'};
+const TYPE_x_TUCK = {kcode:'Tu-Tu'};
+const TYPE_KNIT_KNIT = {kcode:'Kn-Kn'};
+const TYPE_TUCK_KNIT = {kcode:'Tu-Kn'};
+const TYPE_KNIT_TUCK = {kcode:'Kn-Tu'};
+const TYPE_TUCK_TUCK = {kcode:'Tu-Tu'};
 
-// //different pass yarn hook actions:
-// const HOOK_IN = 'hook-in'; //bring in yarn using hook before pass starts (GRIPPER_IN must also be set)
-// const HOOK_RELEASE = 'hook-release'; //release yarn from hook *before the pass starts* (tested on machine)
-// const HOOK_OUT = 'hook-out'; //bring yarn out using hook after pass ends (GRIPPER_OUT must also be set)
+const TYPE_XFER = {front:'Xf', back:'Xf'}; //will actually get split in output
+
+function merge_types(a,b) {
+	//same type, easy to merge:
+	if (a === b) return a;
+
+	//"soft miss" passes can merge with anything knit- or tuck- like:
+	if (a === TYPE_SOFT_MISS) {
+		if (b !== TYPE_XFER) return b;
+		else return null;
+	}
+	if (b === TYPE_SOFT_MISS) {
+		if (a !== TYPE_XFER) return a;
+		else return null;
+	}
+	
+	//types that only define one bed get merged:
+	if (a === TYPE_KNIT_x) {
+		if      (b === TYPE_x_KNIT) return TYPE_KNIT_KNIT;
+		else if (b === TYPE_x_TUCK) return TYPE_KNIT_TUCK;
+	} else if (a === TYPE_x_KNIT) {
+		if      (b === TYPE_KNIT_x) return TYPE_KNIT_KNIT;
+		else if (b === TYPE_TUCK_x) return TYPE_TUCK_KNIT;
+	} else if (a === TYPE_TUCK_x) {
+		if      (b === TYPE_x_KNIT) return TYPE_TUCK_KNIT;
+		else if (b === TYPE_x_TUCK) return TYPE_TUCK_TUCK;
+	} else if (a === TYPE_x_TUCK) {
+		if      (b === TYPE_KNIT_x) return TYPE_KNIT_TUCK;
+		else if (b === TYPE_TUCK_x) return TYPE_TUCK_TUCK;
+	}
+
+	//return 'null' if no merge possible:
+	return null;
+}
 
 //different pass yarn gripper actions:
-const GRIPPER_IN = 'gripper-in'; //bring yarn in from gripper (inhook will also set HOOK_IN)
-const GRIPPER_OUT = 'gripper-out'; //bring yarn out to gripper (outhook will also set HOOK_OUT)
+const GRIPPER_IN = 'gripper-in'; //bring yarn in from gripper
+const GRIPPER_OUT = 'gripper-out'; //bring yarn out to gripper
 
 //pass directions:
 const DIRECTION_LEFT = '-';
@@ -211,13 +213,10 @@ const DIRECTION_NONE = '';
 function Pass(info) {
 	//type: one of the TYPE_* constants (REQUIRED)
 	//racking: number giving racking (REQUIRED)
-	//DELETED//stitch: number giving stitch (REQUIRED)
 	//slots: raster index -> operation
 	//direction: one of the DIRECTION_* constants
 	//carriers: array of carriers, possibly of zero length
-	//DELETED//hook: one of the HOOK_* constants or undefined
 	//gripper: one of the GRIPPER_* constants or undefined
-	//DELETED//presserMode: 'off', 'on', or 'auto'
 	['type', 'slots', 'direction', 'carriers', 'gripper', 'racking', 'pause', 'speed'].forEach(function(name){
 		if (name in info) this[name] = info[name];
 	}, this);
@@ -250,14 +249,10 @@ function Pass(info) {
 	// 	console.assert(!('gripper' in this), "Must use gripper only on KNIT_TUCK pass.");
 	// 	console.assert(!('hook' in this), "Must use hook only on KNIT_TUCK pass.");
 	// 	console.assert(this.carriers.length === 0, "Transfer passes cannot have carriers specified.");
-	// 	console.assert(!('presserMode' in this), "Transfer passes cannot have a presser mode.");
 	// } else {
 	// 	console.assert(false, "Pass type must be one of the TYPE_* constants.");
 	// }
 
-	// if (this.type == TYPE_SPLIT_VIA_SLIDERS) {
-	// 	this.pendingReturn = {};
-	// }
 }
 
 Pass.prototype.hasFront = function() {
@@ -293,28 +288,10 @@ Pass.prototype.append = function(pass) {
 		return false;
 	}
 
-	// //Make sure presser mode matches (TODO: cold probably be more clever about merging 'auto' and 'on'/'off' passes):
-	// if (('presserMode' in this) && ('presserMode' in pass) && this.presserMode !== pass.presserMode) {
-	// 	return false;
-	// }
-	// if (this.presserMode === 'on') {
-	// 	console.assert(!(this.hasFront() && this.hasBack()), "Presser mode can't be on in a mixed front/back pass.");
-	// 	if (this.hasFront() && pass.hasBack()) return false;
-	// 	if (this.hasBack() && pass.hasFront()) return false;
-	// 	if (pass.hook) return false;
-	// }
-
-	// //it is okay to merge hook operations in a few cases:
-	// if (!('hook' in this) && !('hook' in pass)) {
-	// 	//hook in neither is fine
-	// } else if ((this.hook === HOOK_IN || this.hook == HOOK_RELEASE) && !('hook' in pass)) {
-	// 	//in or release at the start of the current pass is fine
-	// } else if (!('hook' in this) && pass.hook === HOOK_OUT) {
-	// 	//out or release at the end of the next pass is fine
-	// } else {
-	// 	//hook operations are in conflict
-	// 	return false;
-	// }
+	//pass types must be merge-able:
+	if (merge_types(this.type, pass.type) === null) {
+		return false;
+	}
 
 	//it is okay to merge gripper operations in a few cases:
 	if (!('gripper' in this) && !('gripper' in pass)) {
@@ -328,8 +305,8 @@ Pass.prototype.append = function(pass) {
 		return false;
 	}
 
-  //must have a free slot for the new operation(s):
-  //TO-DO change to halfPitch
+	//must have a free slot for the new operation(s):
+	//TO-DO change to halfPitch <-- actually this is okay, I think!
 	let quarterPitch = (this.racking - Math.floor(this.racking) != 0.0);
 	if (this.direction === DIRECTION_RIGHT) {
 		//new operation needs to be to the right of other operations.
@@ -385,17 +362,9 @@ Pass.prototype.append = function(pass) {
 
 	//---- actually merge next pass ----
 
-	// //merge presserMode:
-	// if ('presserMode' in pass) {
-	// 	this.presserMode = pass.presserMode;
-	// }
+	this.type = merge_types(this.type, pass.type);
+	console.assert(this.type !== null, "we checked that merge was valid");
 
-	// //merge hook properties:
-	// if (!('hook' in this) && ('hook' in pass)) {
-	// 	this.hook = pass.hook;
-	// } else {
-	// 	console.assert(!('hook' in pass), "we checked this");
-	// }
 	//merge gripper properties:
 	if (!('gripper' in this) && ('gripper' in pass)) {
 		this.gripper = pass.gripper;
@@ -513,6 +482,7 @@ let passes = [];
 			throw "ERROR: 'Carriers:' header is required.";
 		}
 
+		//TODO: revisit this, allow any carriers header?
 		//This code requires Carriers to be 1 .. 10 in order:
 		if (headers.Carriers.join(' ') !== '1 2 3 4 5 6 7 8 9 10') {
 			throw "ERROR: 'Carriers:' header must be '1 2 3 4 5 6 7 8 9 10'.";
@@ -543,27 +513,11 @@ let passes = [];
 	})();
 
 	let carriers = {}; //carriers are held in an "name" => object map.
-	let hook = null; //holding hook isn't holding anything just now, would {direction:DIRECTION_*, cs:["", "",...]}
 	let racking = 0.0; //racking starts centered
 	let stitch = 5; //machine-specific stitch number
 	let xferStitch = 0; //machine-specific stitch number for transfers; 0 => default
 	let speed = 0; //machine-specific speed number
-	// let presserMode = "off"; //fabric presser mode, one of 'on', 'off', or 'auto'
 	let pausePending = false; //optional stop before next instruction, please
-
-	//if doing a split-via-sliders operation, svs looks like:
-	let svs = null;
-	//svs = {
-	//  //source stuff:
-	//	cs:[], //carrier(s) being used
-	//	needles:{}, //set of needle names that have been split from
-	//	racking:1.0, //some (integer) racking
-	//	//return stuff (only included if during split-via-sliders):
-	//	return:{
-	//		needles:{}, //set of needle names that have been returned from
-	//		racking:-4.0, //some (integer) racking
-	//	}
-	//};
 
 	function slotNumber(bn) {
 		if (bn.isFront()) {
@@ -646,7 +600,7 @@ let passes = [];
 
 				for (let slot in slotCs) {
 					let info = {
-						type:TYPE_KNIT_TUCK,
+						type:TYPE_SOFT_MISS,
 						slots:{},
 						racking:racking,
 						stitch:stitch,
@@ -740,7 +694,7 @@ let passes = [];
 				} else {
 					//Otherwise, need to kick left:
 					let info = {
-						type:TYPE_KNIT_TUCK,
+						type:TYPE_SOFT_MISS,
 						slots:{},
 						racking:racking,
 						stitch:stitch,
@@ -762,7 +716,7 @@ let passes = [];
 				} else {
 					//Otherwise, need to kick right:
 					let info = {
-						type:TYPE_KNIT_TUCK,
+						type:TYPE_SOFT_MISS,
 						slots:{},
 						racking:racking,
 						stitch:stitch,
@@ -781,7 +735,7 @@ let passes = [];
 		}
 	}
 
-	//if carriers in 'cs' are marked to in, and add proper gripper/hook ops to info and unmark them:
+	//if carriers in 'cs' are marked to in, and add proper gripper ops to info and unmark them:
 	function handleIn(cs, info) {
 		if (cs.length === 0) return;
 		let inInfo = null;
@@ -796,13 +750,8 @@ let passes = [];
 			if (JSON.stringify(inInfo.cs) !== JSON.stringify(cs)) throw "ERROR: first use of carriers " + JSON.stringify(cs) + " doesn't match in info " + JSON.stringify(inInfo);
 			if (inInfo.op === 'in') {
 				info.gripper = GRIPPER_IN;
-			} else if (inInfo.op === 'inhook') {
-				info.gripper = GRIPPER_IN;
-				info.hook = HOOK_IN;
-				if (hook !== null) throw "ERROR: can't bring in " + JSON.stringify(cs) + " with hook; hook is holding " + JSON.stringify(hook.cs) + ".";
-				hook = {direction:info.direction, cs:cs.slice()}; //record that these are being held.
 			} else {
-				console.assert(false, "inInfo.op must be 'in' or 'inhook'");
+				console.assert(false, "inInfo.op must be 'in'");
 			}
 		}
 	}
@@ -853,15 +802,10 @@ let passes = [];
 			expectNoCarriers = true;
 		}
 
-		function throwIfSVS() {
-			if (svs) {
-				throw "Can't '" + op + "' -- splits-via-slider are pending.";
-			}
-		}
-		
 		//Handle operations:
-		if (op === 'in' || op === 'inhook') {
-			throwIfSVS();
+		if (op === 'inhook') {
+			throw "ERROR: cannot 'inhook' on this machine.";
+		} else if (op === 'in') {
 			let cs = args;
 			if (cs.length === 0) throw "ERROR: Can't bring in no carriers";
 
@@ -880,79 +824,19 @@ let passes = [];
 			cs.forEach(function(c){
 				let carrier = new Carrier(c);
 				carrier.in = inInfo;
-				carrier.used_hook = (op === 'inhook');
 				carriers[c] = carrier;
 			});
 		} else if (op === 'releasehook') {
-			throwIfSVS();
-			let cs = args;
-			if (hook === null) {
-				throw "ERROR: Can't releasehook on " + cs + ", hook currently empty.";
-			} else if (JSON.stringify(hook.cs) !== JSON.stringify(cs)) {
-				throw "ERROR: Can't releasehook on " + cs + ", hook currently holds " + hook + ".";
-			}
-
-			cs.forEach(function(c){
-				carriers[c].used_hook = false;
-			});
-
-			let needPass = true;
-			//HOOK_RELEASE on the machine releases *before* the pass, so must start a new pass always (always):
-			/*
-			if (passes.length > 0) {
-				let prev = passes[passes.length-1];
-				if (prev.type === TYPE_KNIT_TUCK && !('hook' in prev) && prev.direction === hook.direction) {
-					prev.hook = HOOK_RELEASE;
-					needPass = false;
-				}
-			}*/
-			if (needPass) {
-				//can we put in a pass that does *nothing* and release hook on it?
-				//... well, we can try, at least:
-				let info = {
-					type:TYPE_KNIT_TUCK,
-					direction:hook.direction,
-					carriers:[], //Ideally, there should be some way to say "use whatever carriers happen to appear in the hook.direction-going pass it doesn't matter", but for now we'll use no carriers because otherwise unnecessary kicks happen
-					racking:racking,
-					stitch:stitch,
-					speed:speed,
-					hook:HOOK_RELEASE,
-					slots:{}
-				};
-				info.slots[slotString(carriers[cs[0]].last.needle)] = OP_SOFT_MISS;
-			
-				// knit paint refuses to release hook on a carriage move pass (R5 = 2)
-				// add a dummy pass to avoid carriage move in the release hook pass
-				if(passes[passes.length - 1].direction === info.direction){
-					let dummy = {
-						type:TYPE_KNIT_TUCK,
-						direction: hook.direction === DIRECTION_LEFT ? DIRECTION_RIGHT : DIRECTION_LEFT,
-						carriers:[],
-						racking:racking,
-						stitch:stitch,
-						speed:speed,
-						slots:{}
-					};
-					dummy.slots[slotString(carriers[cs[0]].last.needle)] = OP_SOFT_MISS;
-					passes.push(new Pass(dummy));
-				}
-				
-				passes.push(new Pass(info));
-				//merge(new Pass(info)); merge will fail anyway
-			}
-			//and hook is back to holding nothing:
-			hook = null;
-		} else if (op === 'out' || op === 'outhook') {
-			throwIfSVS();
+			throw "ERROR: cannot 'releasehook' on this machine.";
+		} else if (op === 'outhook') {
+			throw "ERROR: cannot 'outhook' on this machine.";
+		} else if (op === 'out') {
 			let cs = args;
 			
 			cs.forEach(function(c){
 				if (!(c in carriers)) throw "ERROR: Can't bring out carrier '" + c + "' -- it isn't yet active.";
 				if (!carriers[c].last) throw "ERROR: Can't bring out carrier '" + c + "' -- it hasn't yet stitched.";
-				if (op === 'out' && carriers[c].used_hook) throw "ERROR: Can't out carriers " + carriers[c].name + ", hook release pending " + JSON.stringify(hook.cs) + "."; 
 			});
-
-			if (op === 'outhook' && hook !== null) throw "ERROR: Can't outhook carriers " + cs + ", hook is already holding " + JSON.stringify(hook.cs) + ".";
 
 			//make a pass with (at least) a single rightward miss from which to take the carrier set out:
 			let s = -Infinity;
@@ -976,8 +860,6 @@ let passes = [];
 			};
 			info.slots[slotString(n)] = OP_SOFT_MISS;
 
-			if (op === 'outhook') info.hook = HOOK_OUT;
-
 			merge(new Pass(info));
 
 			//remove carriers from active set:
@@ -992,7 +874,6 @@ let passes = [];
 			if (frac != 0.0 && frac != 0.25) throw "ERROR: rackings must be an integer or an integer + 0.25";
 			racking = newRacking;
 		} else if (op === 'stitch') {
-			throwIfSVS();
 			if (args.length !== 2) throw "ERROR: stitch takes two arguments.";
 			if (!/^[+-]?\d+$/.test(args[0]) || !/^[+-]?\d+$/.test(args[1])) throw "ERROR: stitch arguments must be integers.";
 			let newLeading = parseInt(args.shift());
@@ -1006,26 +887,12 @@ let passes = [];
 			}
 			stitch = STITCH_NUMBERS[key];
 		} else if (op === 'x-presser-mode') {
-			throwIfSVS();
-			if (args.length !== 1) throw "ERROR: x-presser-mode takes one argument.";
-			if (['on', 'off', 'auto'].indexOf(args[0]) === -1) throw "ERROR: x-presser-mode should be one of 'on', 'off', or 'auto'" + " got : " + args[0];
-			presserMode = args[0];
+			console.warn("WARNING: x-presser-mode not supported on this machine.");
 		} else if (op === 'x-speed-number') {
-			throwIfSVS();
-			if (args.length !== 1) throw "ERROR: x-speed-number takes one argument.";
-			if (!/^[+]?\d+$/.test(args[0])) throw "ERROR: x-speed-number argument must be non-negative integer.";
-			let newSpeedNumber = parseInt(args.shift());
-			speed = newSpeedNumber;
-
+			console.warn("WARNING: x-speed-number not supported on this machine (though, perhaps, it should be)");
 		} else if (op === 'x-stitch-number') {
-			throwIfSVS();
-			if (args.length !== 1) throw "ERROR: x-stitch-number takes one argument.";
-			if (!/^[+]?\d+$/.test(args[0])) throw "ERROR: x-stitch-number argument must be non-negative integer.";
-			let newStitchNumber = parseInt(args.shift());
-			//TODO: perhaps check that stitch number looks valid for machine
-			stitch = newStitchNumber;
+			console.warn("WARNING: x-stitch-number not supported on this machine (though, perhaps, it should be)");
 		} else if (op === 'miss' || op === 'tuck' || op === 'knit') {
-			throwIfSVS();
 			let d = args.shift();
 			let n = new BedNeedle(args.shift());
 			let cs = args;
@@ -1048,11 +915,9 @@ let passes = [];
 			}
 
 			let type;
-			if (op === 'tuck' && cs.length === 0) {
-				type = TYPE_A_MISS; //a-miss is tuck without carriers
-			} else {
-				type = TYPE_KNIT_TUCK;
-			}
+			if      (op === 'knit') type = (n.isFront() ? TYPE_KNIT_x : TYPE_x_KNIT);
+			else if (op === 'tuck') type = (n.isFront() ? TYPE_TUCK_x : TYPE_x_TUCK);
+			else if (op === 'miss') type = TYPE_SOFT_MISS; //NOTE: this might not be exactly right
 
 			let info = {
 				type:type,
@@ -1062,10 +927,9 @@ let passes = [];
 				speed:speed,
 				carriers:cs,
 				direction:d,
-				presserMode:presserMode,
 			};
 
-			if      (op === 'miss') info.slots[slotString(n)] = (n.isFront() ? OP_MISS_FRONT : OP_MISS_BACK);
+			if      (op === 'miss') info.slots[slotString(n)] = OP_SOFT_MISS;
 			else if (op === 'tuck') info.slots[slotString(n)] = (n.isFront() ? OP_TUCK_FRONT : OP_TUCK_BACK);
 			else if (op === 'knit') info.slots[slotString(n)] = (n.isFront() ? OP_KNIT_FRONT : OP_KNIT_BACK);
 			else console.assert(false, "op was miss, tuck, or knit");
@@ -1077,125 +941,9 @@ let passes = [];
 			setLast(cs, d, n);
 
 		} else if (op === 'split') {
-			let d = args.shift();
-			let n = new BedNeedle(args.shift());
-			let t = new BedNeedle(args.shift());
-			let cs = args;
+			throw "ERROR: split instruction not supported on this machine";
 
-			if (expectNoCarriers && cs.length !== 0) {
-				throw "ERROR: cannot xfer with carriers (use split).";
-			}
-
-			//make sure that 't' and 'n' align reasonably:
-			if (n.isBack() && t.isFront()) {
-				if (n.needle + racking !== t.needle) {
-					throw "ERROR: needles '" + n + "' and '" + t + "' are not aligned at racking " + racking + ".";
-				}
-			} else if (n.isFront() && t.isBack()) {
-				if (n.needle !== t.needle + racking) {
-					throw "ERROR: needles '" + n + "' and '" + t + "' are not aligned at racking " + racking + ".";
-				}
-			}
-
-			let op;
-			let type;
-			//make sure that this is a valid operation, and fill in proper OP:
-			if (n.isHook() && t.isHook()) {
-				throwIfSVS();
-				if (cs.length === 0) {
-					type = TYPE_XFER;
-					op = (n.isFront() ? OP_XFER_TO_BACK : OP_XFER_TO_FRONT);
-				} else {
-					type = TYPE_SPLIT;
-					op = (n.isFront() ? OP_SPLIT_TO_BACK : OP_SPLIT_TO_FRONT);
-				}
-			} else if (n.isSlider() && t.isHook()) {
-				if (cs.length === 0) {
-					if (svs) {
-						if (!('returnRacking' in svs)) {
-							svs.returnRacking = racking;
-							//patch returnRacking into pass:
-							console.assert(passes[passes.length-1].type === TYPE_SPLIT_VIA_SLIDERS, "Must have svs pass pending if returning.");
-							passes[passes.length-1].returnRacking = racking;
-						}
-						if (svs.returnRacking !== racking) {
-							throw "ERROR: Cannot return at both racking " + svs.returnRacking + " and racking " + racking + ".";
-						}
-						if (!(n in svs.needles)) {
-							throw "ERROR: Split-via-sliders loop at " + n + " does not exist -- was already returned or never split to.";
-						}
-						delete svs.needles[n];
-						if (JSON.stringify(svs.needles) === "{}") {
-							//SPLIT_VIA_SLIDERS pass is done(!)
-							svs = null;
-						}
-					} else {
-						type = TYPE_XFER_FROM_SLIDERS;
-						op = (n.isFront() ? OP_XFER_TO_BACK : OP_XFER_TO_FRONT);
-					}
-				} else {
-					throw "ERROR: cannot split from slider.";
-				}
-			} else if (n.isHook() && t.isSlider()) {
-				if (cs.length === 0) {
-					throwIfSVS();
-					type = TYPE_XFER_TO_SLIDERS;
-					op = (n.isFront() ? OP_XFER_TO_BACK : OP_XFER_TO_FRONT);
-				} else {
-					//splits are awkward because all of the colors for them *also* include an automatic return from the slider.
-					if (!svs) {
-						//start a new split-via-sliders:
-						svs = { needles:{}, racking:racking };
-					}
-					if ('returnRacking' in svs) {
-						throw "ERROR: Cannot split-to-sliders during return-from-sliders phase.";
-					}
-					if (svs.racking !== racking) {
-						throw "ERROR: Cannot split-to-sliders at both racking " + svs.racking + " and racking " + racking + ".";
-					}
-					if (t in svs.needles) {
-						throw "ERROR: Split-via-sliders loop at " + n + " -> " + t + " has already been split.";
-					}
-					svs.needles[t] = true;
-
-					type = TYPE_SPLIT_VIA_SLIDERS;
-					op = (n.isFront() ? OP_SPLIT_TO_BACK : OP_SPLIT_TO_FRONT);
-				}
-			} else {
-				throw "ERROR: cannot move from slider to slider.";
-			}
-
-			if (op) {
-				if (cs.length === 0) {
-					d = ""; //xfer is directionless
-				}
-				kickOthers(n,cs); //both xfer and split need carriers out of the way
-
-				let info = {
-					type:type,
-					slots:{},
-					racking:racking,
-					stitch:(cs.length === 0 ? xferStitch : stitch),
-					speed:speed,
-					carriers:cs,
-					direction:d,
-				};
-				info.slots[slotString(n)] = op;
-				handleIn(cs, info);
-
-				merge(new Pass(info));
-
-				//update any carrier.last that pointed to this needle -- the stitch just got moved!
-				for (let cn in carriers) {
-					let c = carriers[cn];
-					if (c.last && c.last.needle.bed == n.bed && c.last.needle.needle == n.needle) {
-						c.last.needle = new BedNeedle(t.bed, t.needle);
-					}
-				}
-				setLast(cs, d, n);
-			}
 		} else if (op === 'pause') {
-			throwIfSVS();
 			if (pausePending) {
 				console.warn("WARNING: redundant pause instruction.");
 			}
@@ -1213,7 +961,7 @@ let passes = [];
 	{
 	
 		if (!(Object.entries(carriers).length === 0)){
-			throw "ERROR: All carriers need to be taken out, out/outhook missing on carriers: " + Object.keys(carriers) + ".";
+			throw "ERROR: All carriers need to be taken out, out missing on carriers: " + Object.keys(carriers) + ".";
 		}
 	}
 
@@ -1224,45 +972,280 @@ let passes = [];
 
 
 (function passesToKCode() {
+
+	//compute minimum and maximum slots both for each pass and for the program as a whole:
 	let minSlot = Infinity;
 	let maxSlot =-Infinity;
 	passes.forEach(function(pass){
+		pass.minSlot = Infinity;
+		pass.maxSlot =-Infinity;
 		for (let s in pass.slots) {
 			let si = parseInt(s);
-			minSlot = Math.min(minSlot, si);
-			maxSlot = Math.max(maxSlot, si);
+			pass.minSlot = Math.min(pass.minSlot, si);
+			pass.maxSlot = Math.max(pass.maxSlot, si);
 		}
-		console.log(pass);
+		minSlot = Math.min(minSlot, pass.minSlot);
+		maxSlot = Math.max(maxSlot, pass.maxSlot);
 	});
 	console.log(minSlot, maxSlot);
 
-	//assume centered pattern:
-	function needleToSlot(n) {
-		const ofs = Math.floor(0.5 * (maxSlot + minSlot) - 0.5 * 252);
-		return n + ofs;
+	//For now, assume centered pattern when converting needles to slots / slots to needles:
+	//gives the offset from slot i to needle n on the front bed:
+	const slotToNeedle = Math.floor(0.5 * 252 - 0.5 * (maxSlot + minSlot));
+	function frontNeedleToSlot(n) { return n - slotToNeedle; }
+	function backNeedleToSlot(n, racking) { return n + Math.floor(racking) - slotToNeedle; }
+
+
+	//Now convert passes to 'kcode passes' by splitting xfer passes and adding any needed carriage moves:
+	let kcodePasses = [];
+	//each 'kcode pass' looks like:
+	// {
+	//    FRNT:'...---_---_- ... ----_---...',
+	//    STIF:'555555555555 ... 55555555555',
+	//    REAR:'...---_---_- ... ----_---...',
+	//    STIR:'555555555555 ... 55555555555',
+	//    RACK:1.0,
+	//    carrier:5, //carrier index 1-6
+	//    carrierLeft:12.5, carrierRight:27.5, //where carrier starts and ends (fractional front-bed needle position)
+	//    //carriage info:
+	//    carriageLeft:-5.5, carriageRight:-7.5, //where carriage starts and ends (fractional front-bed needle position)
+	//    direction:DIRECTION_RIGHT,
+	//    type:'Kn-Kn',
+	//    speed:100, //carriage speed amount
+	//    roller:0, //roller advance amount
+	// }
+
+	//yarn carrier state:
+	//TODO: verify these starting positions (maybe they don't matter?)
+	let carrierAt = {
+		'1':-11.5,
+		'2':-9.5,
+		'3':-9.5,
+		'4':-7.5,
+		'5':-7.5,
+		'6':-7.5,
 	};
 
+	//stopping distances past last-used needle location:
+	const CARRIER_STOP = 4.5;
+	const CARRIAGE_STOP = 4.5;
+
+	//yarn carriage state:
+	let nextDirection = DIRECTION_RIGHT;
+	let leftStop =    0 - 11.5;
+	let rightStop = 251 + 11.5;
+	let rack = 0.0;
+
+	//helper function to move carriage to other side of bed:
+	function carriageMove(carriageTo) {
+		//build a blank pass:
+		let bed = '';
+		let stitch = '';
+		for (let i = 0; i < 15; ++i) {
+			bed += '.';
+			stitch += '0';
+		}
+		for (let i = 0; i < 252; ++i) {
+			bed += '_';
+			stitch += '0';
+		}
+		for (let i = 0; i < 15; ++i) {
+			bed += '.';
+			stitch += '0';
+		}
+		let pass = {
+			FRNT:bed, STIF:stitch, REAR:bed, STIR:stitch,
+			RACK:rack,
+			direction:nextDirection,
+			carriageLeft:leftStop,
+			carriageRight:rightStop,
+			speed:100, //TODO: might make this faster since no knitting is happening
+			roller:0,
+			comment:"automatically inserted carriage move"
+		};
+		kcodePasses.push(pass);
+
+		//update carriage info:
+		nextDirection = (nextDirection === DIRECTION_RIGHT ? DIRECTION_LEFT : DIRECTION_RIGHT);
+	}
 
 	passes.forEach(function(pass){
-		let FRNT = '';
-		let REAR = '';
-		for (let i = 0; i < 15; ++i) {
-			FRNT += '.';
-			REAR += '.';
-		}
-		for (let n = 0; n <= 252; ++n) {
-			let s = needleToSlot(n);
-			if (s in pass.slots) {
-				
+		if (pass.type === TYPE_XFER) {
+			console.warn("TODO: split xfer pass into even/odd and left/right variants.");
+			//kcode.push("// --- THERE SHOULD BE AN XFER PASS HERE ---");
+		} else if (pass.type === TYPE_SOFT_MISS) {
+			console.warn("TODO: not clear what to do with a soft miss pass that ends up making it through to this point in the pipeline.");
+		} else {
+			//some sort of knit/tuck pass:
+			rack = pass.racking;
+			let kpass = {
+				RACK:rack,
+				type:pass.type.kcode,
+				speed:100,
+				roller:100,
+			};
+
+			//set pass direction and carrier info:
+			if (pass.carriers.length === 0) {
+				//really a drop/amiss pass...
+				console.assert(pass.direction === DIRECTION_NONE);
+				kpass.direction = nextDirection;
 			} else {
-				FRNT += '_';
-				REAR += '_';
+				console.assert(pass.carriers.length === 1, "expecting zero or one carriers per pass");
+				kpass.direction = pass.direction;
+
+				kpass.carrier = pass.carriers[0];
+				console.assert(kpass.carrier in carrierAt, "carrier '" + kpass.carrier + "' should be in carrierAt list.");
+				//set carrier stopping points:
+				if (kpass.direction === DIRECTION_LEFT) {
+					kpass.carrierRight = carrierAt[kpass.carrier];
+					kpass.carrierLeft = pass.minSlot + slotToNeedle - CARRIER_STOP;
+					carrierAt[kpass.carrier] = kpass.carrierLeft;
+				} else { console.assert(kpass.direction === DIRECTION_RIGHT);
+					kpass.carrierLeft = carrierAt[kpass.carrier];
+					kpass.carrierRight = pass.maxSlot + slotToNeedle + CARRIER_STOP;
+					carrierAt[kpass.carrier] = kpass.carrierRight;
+				}
 			}
-		}
-		for (let i = 0; i < 14; ++i) {
-			FRNT += '.';
-			REAR += '.';
+
+			//insert a carriage move pass if needed:
+			if (kpass.direction !== nextDirection) {
+				//update carriage stopping point for carriage move:
+				if (kpass.direction === DIRECTION_LEFT) {
+					rightStop = pass.maxSlot + slotToNeedle + CARRIAGE_STOP;
+				} else {console.assert(kpass.direction === DIRECTION_RIGHT);
+					leftStop = pass.minSlot + slotToNeedle - CARRIAGE_STOP;
+				}
+				//perform carriage move:
+				carriageMove();
+				console.assert(nextDirection === kpass.direction);
+			}
+
+			//shift previous pass's stopping point if needed:
+			let kprev = (kcodePasses.length > 0 ? kcodePasses[kcodePasses.length-1] : null);
+			//update carriage starting/stopping points for this pass:
+			if (kpass.direction === DIRECTION_LEFT) {
+				//starting point:
+				rightStop = Math.max(rightStop, pass.maxSlot + slotToNeedle + CARRIAGE_STOP);
+				//shift previous pass's stop as well:
+				if (kprev) kprev.carriageRight = rightStop;
+				//stopping point:
+				leftStop = pass.minSlot + slotToNeedle - CARRIAGE_STOP;
+			} else {console.assert(kpass.direction === DIRECTION_RIGHT);
+				//starting point:
+				leftStop = Math.min(leftStop, pass.minSlot + slotToNeedle - CARRIAGE_STOP);
+				//shift previous pass's stop as well:
+				if (kprev) kprev.carriageLeft = leftStop;
+				//stopping point:
+				rightStop = pass.maxSlot + slotToNeedle + CARRIAGE_STOP;
+			}
+			kpass.carriageLeft = leftStop;
+			kpass.carriageRight = rightStop;
+
+			//build needle selections:
+			kpass.FRNT = '';
+			kpass.STIF = '';
+			kpass.REAR = '';
+			kpass.STIR = '';
+
+			for (let i = 0; i < 15; ++i) {
+				kpass.FRNT += '.';
+				kpass.REAR += '.';
+				kpass.STIF += '5'; //TODO
+				kpass.STIR += '5'; //TODO
+			}
+			for (let n = 0; n <= 252; ++n) {
+				const f = frontNeedleToSlot(n);
+				if (f in pass.slots && pass.slots[f].isFront) {
+					kpass.FRNT += '-';
+				} else {
+					kpass.FRNT += '_';
+				}
+				const b = backNeedleToSlot(n, pass.racking);
+				if (b in pass.slots && pass.slots[b].isFront) {
+					kpass.REAR += '-';
+				} else {
+					kpass.REAR += '_';
+				}
+				kpass.STIF += '5'; //TODO
+				kpass.STIR += '5'; //TODO
+			}
+			for (let i = 0; i < 15; ++i) {
+				kpass.FRNT += '.';
+				kpass.REAR += '.';
+				kpass.STIF += '5'; //TODO
+				kpass.STIR += '5'; //TODO
+			}
+			kcodePasses.push(kpass);
+			nextDirection = (nextDirection === DIRECTION_RIGHT ? DIRECTION_LEFT : DIRECTION_RIGHT);
 		}
 	});
+
+
+	//Finally, write 'kcode passes', using some look-ahead / look-behind to figure out carriage turn-around points:
+	let kcode = [];
+	kcode.push("HOME");
+	kcode.push("RACK:0");
+
+	let lastRACK = 0.0;
+	kcodePasses.forEach(function(kpass){
+		console.log("Doing:", kpass); //DEBUG
+		kcode.push("//"); kcode.push("//"); kcode.push("//"); kcode.push("//"); //why do they do this?
+		if ('comment' in kpass) {
+			kcode.push("// " + kpass.comment);
+		}
+		if (kpass.RACK != lastRACK) {
+			kcode.push("RACK:" + kpass.RACK);
+			lastRACK = kpass.RACK;
+		}
+		let FRNT = kpass.FRNT;
+		let REAR = kpass.REAR;
+		let op = (kpass.direction === DIRECTION_RIGHT ? ">>" : "<<");
+		op += " " + kpass.type;
+		//insert carrier / carriage stopping points:
+		console.assert(kpass.carriageLeft < kpass.carriageRight, "properly ordered carriage stops");
+		console.assert(kpass.carriageLeft - Math.floor(kpass.carriageLeft) === 0.5, "carriage stop is properly fractional");
+		console.assert(kpass.carriageRight - Math.floor(kpass.carriageRight) === 0.5, "carriage stop is properly fractional");
+		//make into an index into the needle selection string:
+		const carriageLeft = Math.floor(kpass.carriageLeft + 15);
+		const carriageRight = Math.floor(kpass.carriageRight + 15);
+		if ('carrier' in kpass) {
+			op += " " + kpass.carrier;
+			console.assert(kpass.carrierLeft < kpass.carrierRight, "properly ordered carrier stops");
+			console.assert(kpass.carrierLeft - Math.floor(kpass.carrierLeft) === 0.5, "carrier stop is properly fractional");
+			console.assert(kpass.carrierRight - Math.floor(kpass.carrierRight) === 0.5, "carrier stop is properly fractional");
+			console.assert(kpass.carriageLeft <= kpass.carrierLeft, "carriage comes before carrier on the left");
+			console.assert(kpass.carrierRight <= kpass.carriageRight, "carrier comes before carriage on the right");
+			//make into an index into the needle selection string:
+			const carrierLeft = Math.floor(kpass.carrierLeft + 15);
+			const carrierRight = Math.floor(kpass.carrierRight + 15);
+			//insert punctuation:
+			FRNT = FRNT.substr(0,carriageRight) + '\\' + FRNT.substr(carriageRight);
+			FRNT = FRNT.substr(0,carrierRight) + kpass.carrier + FRNT.substr(carrierRight);
+			FRNT = FRNT.substr(0,carrierLeft) + kpass.carrier + FRNT.substr(carrierLeft);
+			FRNT = FRNT.substr(0,carriageLeft) + '/' + FRNT.substr(carriageLeft);
+			REAR = REAR.substr(0,carriageRight) + '\\' + REAR.substr(carriageRight);
+			REAR = REAR.substr(0,carrierRight) + kpass.carrier + REAR.substr(carrierRight);
+			REAR = REAR.substr(0,carrierLeft) + kpass.carrier + REAR.substr(carrierLeft);
+			REAR = REAR.substr(0,carriageLeft) + '/' + REAR.substr(carriageLeft);
+		} else {
+			op += " " + "0";
+			FRNT = FRNT.substr(0,carriageRight) + '\\' + FRNT.substr(carriageRight);
+			FRNT = FRNT.substr(0,carriageLeft) + '/' + FRNT.substr(carriageLeft);
+			REAR = REAR.substr(0,carriageRight) + '\\' + REAR.substr(carriageRight);
+			REAR = REAR.substr(0,carriageLeft) + '/' + REAR.substr(carriageLeft);
+		}
+		op += " " + kpass.speed;
+		op += " " + kpass.roller;
+
+		kcode.push("FRNT:" + FRNT);
+		kcode.push("STIF:" + kpass.STIF);
+		kcode.push("REAR:" + REAR);
+		kcode.push("STIR:" + kpass.STIR);
+
+		kcode.push(op);
+	});
+
+	fs.writeFileSync(kcFile, kcode.join("\n") + "\n");
 
 })();
