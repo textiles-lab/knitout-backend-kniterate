@@ -991,7 +991,13 @@ let passes = [];
 
 	//For now, assume centered pattern when converting needles to slots / slots to needles:
 	//gives the offset from slot i to needle n on the front bed:
-	const slotToNeedle = Math.floor(0.5 * 252 - 0.5 * (maxSlot + minSlot));
+	const slotToNeedle = (function(){
+		if (headers.Position === 'Center') return Math.floor(0.5 * 252 - 0.5 * (maxSlot + minSlot));
+		else if (headers.Position === 'Keep') return -1; //assume 1-based needle indexing for keep
+		else if (headers.Position === 'Left') return -minSlot;
+		else if (headers.Position === 'Right') return 251 - maxSlot;
+		else throw "ERROR: unrecognized position header";
+	})();
 	function frontNeedleToSlot(n) { return n - slotToNeedle; }
 	function backNeedleToSlot(n, racking) { return n + Math.floor(racking) - slotToNeedle; }
 
@@ -1059,6 +1065,7 @@ let passes = [];
 			direction:nextDirection,
 			carriageLeft:leftStop,
 			carriageRight:rightStop,
+			type:'Kn-Kn',
 			speed:100, //TODO: might make this faster since no knitting is happening
 			roller:0,
 			comment:"automatically inserted carriage move"
@@ -1162,7 +1169,7 @@ let passes = [];
 					kpass.FRNT += '_';
 				}
 				const b = backNeedleToSlot(n, pass.racking);
-				if (b in pass.slots && pass.slots[b].isFront) {
+				if (b in pass.slots && pass.slots[b].isBack) {
 					kpass.REAR += '-';
 				} else {
 					kpass.REAR += '_';
@@ -1184,18 +1191,24 @@ let passes = [];
 
 	//Finally, write 'kcode passes', using some look-ahead / look-behind to figure out carriage turn-around points:
 	let kcode = [];
-	kcode.push("HOME");
-	kcode.push("RACK:0");
+
+	function out(x) {
+		kcode.push(x);
+		console.log(x);
+	}
+
+	out("HOME");
+	out("RACK:0");
 
 	let lastRACK = 0.0;
 	kcodePasses.forEach(function(kpass){
 		console.log("Doing:", kpass); //DEBUG
-		kcode.push("//"); kcode.push("//"); kcode.push("//"); kcode.push("//"); //why do they do this?
+		out("//"); out("//"); out("//"); out("//"); //why do they do this?
 		if ('comment' in kpass) {
-			kcode.push("// " + kpass.comment);
+			out("// " + kpass.comment);
 		}
 		if (kpass.RACK != lastRACK) {
-			kcode.push("RACK:" + kpass.RACK);
+			out("RACK:" + kpass.RACK);
 			lastRACK = kpass.RACK;
 		}
 		let FRNT = kpass.FRNT;
@@ -1207,8 +1220,8 @@ let passes = [];
 		console.assert(kpass.carriageLeft - Math.floor(kpass.carriageLeft) === 0.5, "carriage stop is properly fractional");
 		console.assert(kpass.carriageRight - Math.floor(kpass.carriageRight) === 0.5, "carriage stop is properly fractional");
 		//make into an index into the needle selection string:
-		const carriageLeft = Math.floor(kpass.carriageLeft + 15);
-		const carriageRight = Math.floor(kpass.carriageRight + 15);
+		const carriageLeft = kpass.carriageLeft + 15.5;
+		const carriageRight = kpass.carriageRight + 15.5;
 		if ('carrier' in kpass) {
 			op += " " + kpass.carrier;
 			console.assert(kpass.carrierLeft < kpass.carrierRight, "properly ordered carrier stops");
@@ -1217,8 +1230,8 @@ let passes = [];
 			console.assert(kpass.carriageLeft <= kpass.carrierLeft, "carriage comes before carrier on the left");
 			console.assert(kpass.carrierRight <= kpass.carriageRight, "carrier comes before carriage on the right");
 			//make into an index into the needle selection string:
-			const carrierLeft = Math.floor(kpass.carrierLeft + 15);
-			const carrierRight = Math.floor(kpass.carrierRight + 15);
+			const carrierLeft = kpass.carrierLeft + 15.5;
+			const carrierRight = kpass.carrierRight + 15.5;
 			//insert punctuation:
 			FRNT = FRNT.substr(0,carriageRight) + '\\' + FRNT.substr(carriageRight);
 			FRNT = FRNT.substr(0,carrierRight) + kpass.carrier + FRNT.substr(carrierRight);
@@ -1238,12 +1251,11 @@ let passes = [];
 		op += " " + kpass.speed;
 		op += " " + kpass.roller;
 
-		kcode.push("FRNT:" + FRNT);
-		kcode.push("STIF:" + kpass.STIF);
-		kcode.push("REAR:" + REAR);
-		kcode.push("STIR:" + kpass.STIR);
-
-		kcode.push(op);
+		out("FRNT:" + FRNT);
+		out("STIF:" + kpass.STIF);
+		out("REAR:" + REAR);
+		out("STIR:" + kpass.STIR);
+		out(op);
 	});
 
 	fs.writeFileSync(kcFile, kcode.join("\n") + "\n");
