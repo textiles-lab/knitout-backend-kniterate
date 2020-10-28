@@ -1269,27 +1269,31 @@ let passes = [];
 				let isEven = true;
 				makeXferPass(nextDirection, 'f', 'b', (n) => {
 					const f = frontNeedleToSlot(n);
+					if (!(f in pass.slots && pass.slots[f].isFront)) return false;
 					isEven = !isEven;
-					return (f in pass.slots && pass.slots[f].isFront && !isEven);
+					return !isEven;
 				}, '[front-to-back, even]');
 				isEven = true;
 				makeXferPass(nextDirection, 'f', 'b', (n) => {
 					const f = frontNeedleToSlot(n);
+					if (!(f in pass.slots && pass.slots[f].isFront)) return false;
 					isEven = !isEven;
-					return (f in pass.slots && pass.slots[f].isFront && isEven);
+					return isEven;
 				}, '[front-to-back, odd]');
 
 				isEven = true;
 				makeXferPass(nextDirection, 'b', 'f', (n) => {
 					const b = backNeedleToSlot(n, pass.racking);
+					if (!(b in pass.slots && pass.slots[b].isBack)) return false;
 					isEven = !isEven;
-					return (b in pass.slots && pass.slots[b].isBack && !isEven);
+					return !isEven;
 				}, '[back-to-front, even]');
 				isEven = true;
 				makeXferPass(nextDirection, 'b', 'f', (n) => {
 					const b = backNeedleToSlot(n, pass.racking);
+					if (!(b in pass.slots && pass.slots[b].isBack)) return false;
 					isEven = !isEven;
-					return (b in pass.slots && pass.slots[b].isBack && isEven);
+					return isEven;
 				}, '[back-to-front, odd]');
 			}
 
