@@ -1350,6 +1350,7 @@ let passes = [];
 			if (kpass.direction === DIRECTION_LEFT) {
 				//starting point:
 				rightStop = Math.max(rightStop, pass.maxSlot + slotToNeedle + CARRIAGE_STOP);
+				rightStop = Math.max(rightStop, kpass.carrierRight);
 				//shift previous pass's stop as well:
 				if (kprev) kprev.carriageRight = rightStop;
 				//stopping point:
@@ -1357,6 +1358,7 @@ let passes = [];
 			} else {console.assert(kpass.direction === DIRECTION_RIGHT);
 				//starting point:
 				leftStop = Math.min(leftStop, pass.minSlot + slotToNeedle - CARRIAGE_STOP);
+				leftStop = Math.min(leftStop, kpass.carrierLeft);
 				//shift previous pass's stop as well:
 				if (kprev) kprev.carriageLeft = leftStop;
 				//stopping point:
@@ -1444,7 +1446,7 @@ let passes = [];
 			console.assert(kpass.carrierLeft - Math.floor(kpass.carrierLeft) === 0.5, "carrier stop is properly fractional");
 			console.assert(kpass.carrierRight - Math.floor(kpass.carrierRight) === 0.5, "carrier stop is properly fractional");
 			console.assert(kpass.carriageLeft <= kpass.carrierLeft, "carriage comes before carrier on the left");
-			console.assert(kpass.carrierRight <= kpass.carriageRight, "carrier comes before carriage on the right");
+			console.assert(kpass.carrierRight <= kpass.carriageRight, "carrier comes before carriage on the right", kpass); //DEBUG
 			//make into an index into the needle selection string:
 			const carrierLeft = kpass.carrierLeft + 15.5;
 			const carrierRight = kpass.carrierRight + 15.5;
