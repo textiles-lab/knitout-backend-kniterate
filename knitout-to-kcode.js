@@ -191,17 +191,25 @@ function merge_types(a,b) {
 	
 	//types that only define one bed get merged:
 	if (a === TYPE_KNIT_x) {
-		if      (b === TYPE_x_KNIT) return TYPE_KNIT_KNIT;
-		else if (b === TYPE_x_TUCK) return TYPE_KNIT_TUCK;
+		if      (b === TYPE_x_KNIT || b === TYPE_KNIT_KNIT) return TYPE_KNIT_KNIT;
+		else if (b === TYPE_x_TUCK || b === TYPE_KNIT_TUCK) return TYPE_KNIT_TUCK;
 	} else if (a === TYPE_x_KNIT) {
-		if      (b === TYPE_KNIT_x) return TYPE_KNIT_KNIT;
-		else if (b === TYPE_TUCK_x) return TYPE_TUCK_KNIT;
+		if      (b === TYPE_KNIT_x || b === TYPE_KNIT_KNIT) return TYPE_KNIT_KNIT;
+		else if (b === TYPE_TUCK_x || b === TYPE_TUCK_KNIT) return TYPE_TUCK_KNIT;
 	} else if (a === TYPE_TUCK_x) {
-		if      (b === TYPE_x_KNIT) return TYPE_TUCK_KNIT;
-		else if (b === TYPE_x_TUCK) return TYPE_TUCK_TUCK;
+		if      (b === TYPE_x_KNIT || b === TYPE_TUCK_KNIT) return TYPE_TUCK_KNIT;
+		else if (b === TYPE_x_TUCK || b === TYPE_TUCK_TUCK) return TYPE_TUCK_TUCK;
 	} else if (a === TYPE_x_TUCK) {
-		if      (b === TYPE_KNIT_x) return TYPE_KNIT_TUCK;
-		else if (b === TYPE_TUCK_x) return TYPE_TUCK_TUCK;
+		if      (b === TYPE_KNIT_x || b === TYPE_KNIT_TUCK) return TYPE_KNIT_TUCK;
+		else if (b === TYPE_TUCK_x || b === TYPE_TUCK_TUCK) return TYPE_TUCK_TUCK;
+	} else if (a === TYPE_KNIT_KNIT) {
+		if (b === TYPE_KNIT_x || b === TYPE_x_KNIT) return TYPE_KNIT_KNIT;
+	} else if (a === TYPE_KNIT_TUCK) {
+		if (b === TYPE_KNIT_x || b === TYPE_x_TUCK) return TYPE_KNIT_TUCK;
+	} else if (a === TYPE_TUCK_KNIT) {
+		if (b === TYPE_TUCK_x || b === TYPE_x_KNIT) return TYPE_TUCK_KNIT;
+	} else if (a === TYPE_TUCK_TUCK) {
+		if (b === TYPE_TUCK_x || b === TYPE_x_TUCK) return TYPE_TUCK_TUCK;
 	}
 
 	//return 'null' if no merge possible:
