@@ -1140,7 +1140,7 @@ let passes = [];
 	passes.forEach(function(pass){
 		//soft miss will decay to an empty knit/tuck pass:
 		if (pass.type === TYPE_SOFT_MISS) {
-			console.log("Decaying a SOFT_MISS to a tuck/tuck pass.");
+			//console.log("Decaying a SOFT_MISS to a tuck/tuck pass.");
 			pass.type = TYPE_TUCK_TUCK;
 			pass.comment = "(decayed from a SOFT_MISS)";
 		}
@@ -1350,7 +1350,7 @@ let passes = [];
 			if (kpass.direction === DIRECTION_LEFT) {
 				//starting point:
 				rightStop = Math.max(rightStop, pass.maxSlot + slotToNeedle + CARRIAGE_STOP);
-				rightStop = Math.max(rightStop, kpass.carrierRight);
+				if (pass.carriers.length !== 0) rightStop = Math.max(rightStop, kpass.carrierRight);
 				//shift previous pass's stop as well:
 				if (kprev) kprev.carriageRight = rightStop;
 				//stopping point:
@@ -1358,7 +1358,7 @@ let passes = [];
 			} else {console.assert(kpass.direction === DIRECTION_RIGHT);
 				//starting point:
 				leftStop = Math.min(leftStop, pass.minSlot + slotToNeedle - CARRIAGE_STOP);
-				leftStop = Math.min(leftStop, kpass.carrierLeft);
+				if (pass.carriers.length !== 0) leftStop = Math.min(leftStop, kpass.carrierLeft);
 				//shift previous pass's stop as well:
 				if (kprev) kprev.carriageLeft = leftStop;
 				//stopping point:
@@ -1434,7 +1434,7 @@ let passes = [];
 		let op = (kpass.direction === DIRECTION_RIGHT ? ">>" : "<<");
 		op += " " + kpass.type;
 		//insert carrier / carriage stopping points:
-		console.assert(kpass.carriageLeft < kpass.carriageRight, "properly ordered carriage stops");
+		console.assert(kpass.carriageLeft < kpass.carriageRight, "properly ordered carriage stops", kpass);
 		console.assert(kpass.carriageLeft - Math.floor(kpass.carriageLeft) === 0.5, "carriage stop is properly fractional");
 		console.assert(kpass.carriageRight - Math.floor(kpass.carriageRight) === 0.5, "carriage stop is properly fractional");
 		//make into an index into the needle selection string:
