@@ -109,7 +109,7 @@ const OP_TUCK_FRONT = { name:'OP_TUCK_FRONT', isFront:true };
 const OP_TUCK_BACK  = { name:'OP_TUCK_BACK',  isBack:true };
 
 const OP_KNIT_FRONT = { name:'OP_KNIT_FRONT', isFront:true };
-const OP_KNIT_BACK  = { name:'OP_KNIT_BAACK', isBack:true };
+const OP_KNIT_BACK  = { name:'OP_KNIT_BACK', isBack:true };
 
 //combo ops:
 const OP_KNIT_FRONT_KNIT_BACK = { name:'OP_KNIT_FRONT_KNIT_BACK', isFront:true, isBack:true };
@@ -135,26 +135,28 @@ function merge_ops(a,b,quarterPitch) {
 	}
 	//see if a/b fit one of the combo ops:
 	if (!quarterPitch) return null; //can't merge front/back ops without quarter pitch racking
+	//operations are always front-then-back 
 	if (a === OP_MISS_FRONT_MISS_BACK) {
 		if      (b === OP_MISS_FRONT_MISS_BACK) return OP_MISS_FRONT_MISS_BACK;
-		else if (b === OP_MISS_FRONT_TUCK_BACK) return OP_MISS_FRONT_TUCK_BACK;
-		else if (b === OP_MISS_FRONT_KNIT_BACK) return OP_MISS_FRONT_KNIT_BACK;
-	} else if (a === OP_TUCK_FRONT_MISS_BACK) {
+		else if (b === OP_MISS_FRONT_TUCK_BACK || b === OP_TUCK_BACK) return OP_MISS_FRONT_TUCK_BACK;
+		else if (b === OP_MISS_FRONT_KNIT_BACK || b === OP_KNIT_BACK) return OP_MISS_FRONT_KNIT_BACK;
+	} else if (a === OP_TUCK_FRONT_MISS_BACK || a === OP_TUCK_FRONT) {
 		if      (b === OP_MISS_FRONT_MISS_BACK) return OP_TUCK_FRONT_MISS_BACK;
-		else if (b === OP_MISS_FRONT_TUCK_BACK) return OP_TUCK_FRONT_TUCK_BACK;
-		else if (b === OP_MISS_FRONT_KNIT_BACK) return OP_TUCK_FRONT_KNIT_BACK;
-	} else if (a === OP_KNIT_FRONT_MISS_BACK) {
+		else if (b === OP_MISS_FRONT_TUCK_BACK || b === OP_TUCK_BACK) return OP_TUCK_FRONT_TUCK_BACK;
+		else if (b === OP_MISS_FRONT_KNIT_BACK || b === OP_KNIT_BACK) return OP_TUCK_FRONT_KNIT_BACK;
+	} else if (a === OP_KNIT_FRONT_MISS_BACK || a === OP_KNIT_FRONT) {
 		if      (b === OP_MISS_FRONT_MISS_BACK) return OP_KNIT_FRONT_MISS_BACK;
-		else if (b === OP_MISS_FRONT_TUCK_BACK) return OP_KNIT_FRONT_TUCK_BACK;
-		else if (b === OP_MISS_FRONT_KNIT_BACK) return OP_KNIT_FRONT_KNIT_BACK;
-	} else if (a === OP_MISS_FRONT_TUCK_BACK) {
-		if      (b === OP_MISS_FRONT_MISS_BACK) return OP_MISS_FRONT_TUCK_BACK;
-		else if (b === OP_TUCK_FRONT_MISS_BACK) return OP_TUCK_FRONT_TUCK_BACK;
-		else if (b === OP_KNIT_FRONT_MISS_BACK) return OP_KNIT_FRONT_TUCK_BACK;
-	} else if (a === OP_MISS_FRONT_KNIT_BACK) {
-		if      (b === OP_MISS_FRONT_MISS_BACK) return OP_MISS_FRONT_KNIT_BACK;
-		else if (b === OP_TUCK_FRONT_MISS_BACK) return OP_TUCK_FRONT_KNIT_BACK;
-		else if (b === OP_KNIT_FRONT_MISS_BACK) return OP_KNIT_FRONT_KNIT_BACK;
+		else if (b === OP_MISS_FRONT_TUCK_BACK || b === OP_TUCK_BACK) return OP_KNIT_FRONT_TUCK_BACK;
+		else if (b === OP_MISS_FRONT_KNIT_BACK || b === OP_KNIT_BACK) return OP_KNIT_FRONT_KNIT_BACK;
+	//operations are always front-then-back, so these don't make sense:
+	//} else if (a === OP_MISS_FRONT_TUCK_BACK) {
+	//	if      (b === OP_MISS_FRONT_MISS_BACK) return OP_MISS_FRONT_TUCK_BACK;
+	//	else if (b === OP_TUCK_FRONT_MISS_BACK) return OP_TUCK_FRONT_TUCK_BACK;
+	//	else if (b === OP_KNIT_FRONT_MISS_BACK) return OP_KNIT_FRONT_TUCK_BACK;
+	//} else if (a === OP_MISS_FRONT_KNIT_BACK) {
+	//	if      (b === OP_MISS_FRONT_MISS_BACK) return OP_MISS_FRONT_KNIT_BACK;
+	//	else if (b === OP_TUCK_FRONT_MISS_BACK) return OP_TUCK_FRONT_KNIT_BACK;
+	//	else if (b === OP_KNIT_FRONT_MISS_BACK) return OP_KNIT_FRONT_KNIT_BACK;
 	}
 	//I guess they can't be combined:
 	return null;
