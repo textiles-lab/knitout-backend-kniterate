@@ -888,6 +888,11 @@ let passes = [];
 			if (!/^[+-]?\d*\.?\d+$/.test(args[0])) throw "ERROR: racking must be a number.";
 			let newRacking = parseFloat(args.shift());
 			let frac = newRacking - Math.floor(newRacking);
+			let quarter_frac = (frac == 0.25); //new
+			if (quarter_frac) {
+				newRacking += 0.25;
+				frac = newRacking - Math.floor(newRacking);
+			}
  			//if (frac != 0.0 && frac != 0.25) throw "ERROR: rackings must be an integer or an integer + 0.25";
 			if (frac != 0.0 && frac != 0.5) throw "ERROR: rackings must be an integer or an integer + 0.5"; //new
 			racking = newRacking;
