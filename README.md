@@ -13,13 +13,13 @@ K-code (.kc) is the file format for [Kniterate](https://www.kniterate.com/) knit
 
 In the command line, type:
 ```console
-git clone https://github.com/textiles-lab/knitout-backend-kniterate.git
+git clone https://github.com/textiles-lab/knitout-backend-kniterate
 ```
 See the github documentation on [cloning a repository](https://docs.github.com/en/free-pro-team@latest/github/creating-cloning-and-archiving-repositories/cloning-a-repository) if you need assistance with installation.
 
 ## <a name="usage"></a>Usage
 
-Once the repository has been clone onto your local machine, move the knitout (.k) file you would like to convert to k-code (.kc) into the project's directory (the folder 'knitout-backend-kniterate').\
+Once the repository has been cloned onto your local machine, move the knitout (.k) file you would like to convert to k-code (.kc) into the project's directory (the folder 'knitout-backend-kniterate').\
 Then, navigate to the directory with this command:
 ```console
 cd knitout-backend-kniterate
