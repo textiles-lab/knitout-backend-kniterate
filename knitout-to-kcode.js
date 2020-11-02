@@ -1120,7 +1120,8 @@ let passes = [];
 	let rack = 0.0;
 
 	//helper function to move carriage to other side of bed:
-	function carriageMove(carriageTo) {
+	function carriageMove() {
+		console.assert(leftStop < rightStop, "carriage move with inverted stops"); //DEBUG
 		//build a blank pass:
 		let bed = '';
 		let stitch = '';
@@ -1349,15 +1350,10 @@ let passes = [];
 
 			//insert a carriage move pass if needed:
 			if (kpass.direction !== nextDirection) {
-				//update carriage stopping point for carriage move:
-				if (kpass.direction === DIRECTION_LEFT) {
-					rightStop = pass.maxSlot + slotToNeedle + CARRIAGE_STOP;
-				} else {console.assert(kpass.direction === DIRECTION_RIGHT);
-					leftStop = pass.minSlot + slotToNeedle - CARRIAGE_STOP;
-				}
 				//perform carriage move:
 				carriageMove();
 				console.assert(nextDirection === kpass.direction);
+				//NOTE: stopping point for carriage move will be updated in next block of code, if needed
 			}
 
 			//shift previous pass's stopping point if needed:
