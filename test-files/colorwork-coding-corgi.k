@@ -20482,6 +20482,7 @@ knit + b133 5
 knit + b135 5
 knit + b137 5
 knit + b139 5
+miss + f140 5
 knit - f140 4
 knit - f139 4
 knit - f138 4
@@ -20587,6 +20588,7 @@ knit - b8 4
 knit - b6 4
 knit - b4 4
 knit - b2 4
+miss - f1 4
 knit + b1 3
 knit + b3 3
 knit + b5 3
@@ -20661,6 +20663,7 @@ knit + b133 3
 knit + b135 3
 knit + b137 3
 knit + b139 3
+miss + f140 3
 knit - b140 2
 knit - b138 2
 knit - b136 2
@@ -20829,6 +20832,7 @@ knit + b133 1
 knit + b135 1
 knit + b137 1
 knit + b139 1
+miss + f140 1
 knit + f1 2
 knit + f2 2
 knit + f3 2
@@ -21248,6 +21252,7 @@ knit - b8 6
 knit - b6 6
 knit - b4 6
 knit - b2 6
+miss - f1 6
 ;row: 22
 knit + b1 6
 knit + b3 6
@@ -21322,6 +21327,7 @@ knit + b133 6
 knit + b135 6
 knit + b137 6
 knit + b139 6
+miss + f140 6
 knit + b2 5
 knit + b4 5
 knit + b6 5
@@ -21739,6 +21745,7 @@ knit - b8 1
 knit - b6 1
 knit - b4 1
 knit - b2 1
+miss - f1 1
 ;row: 23
 knit + b1 1
 knit + b3 1
@@ -21811,6 +21818,7 @@ knit + b133 1
 knit + b135 1
 knit + b137 1
 knit + b139 1
+miss + f140 1
 knit + f1 2
 knit + f2 2
 knit + f3 2
@@ -22582,6 +22590,7 @@ knit - b8 1
 knit - b6 1
 knit - b4 1
 knit - b2 1
+miss - f1 1
 ;row: 25
 knit + b1 1
 knit + b3 1
@@ -22654,6 +22663,7 @@ knit + b133 1
 knit + b135 1
 knit + b137 1
 knit + b139 1
+miss + f140 1
 knit + f1 2
 knit + f2 2
 knit + f3 2
@@ -23422,6 +23432,7 @@ knit - b8 1
 knit - b6 1
 knit - b4 1
 knit - b2 1
+miss - f1 1
 ;row: 27
 knit + b1 1
 knit + b3 1
@@ -23494,6 +23505,7 @@ knit + b133 1
 knit + b135 1
 knit + b137 1
 knit + b139 1
+miss + f140 1
 knit + f1 2
 knit + f2 2
 knit + f3 2
@@ -24263,6 +24275,7 @@ knit - b8 1
 knit - b6 1
 knit - b4 1
 knit - b2 1
+miss - f1 1
 ;row: 29
 knit + b1 1
 knit + b3 1
@@ -24337,6 +24350,7 @@ knit + b133 1
 knit + b135 1
 knit + b137 1
 knit + b139 1
+miss + f140 1
 knit + f1 2
 knit + f2 2
 knit + f3 2
@@ -25108,6 +25122,7 @@ knit - b8 1
 knit - b6 1
 knit - b4 1
 knit - b2 1
+miss - f1 1
 ;row: 31
 knit + b1 1
 knit + b3 1
@@ -25185,6 +25200,7 @@ knit + b133 1
 knit + b135 1
 knit + b137 1
 knit + b139 1
+miss + f140 1
 knit + f1 2
 knit + f2 2
 knit + f3 2
@@ -25953,6 +25969,7 @@ knit - b8 1
 knit - b6 1
 knit - b4 1
 knit - b2 1
+miss - f1 1
 ;row: 33
 knit + b1 1
 knit + b3 1
@@ -26034,6 +26051,7 @@ knit + b133 1
 knit + b135 1
 knit + b137 1
 knit + b139 1
+miss + f140 1
 knit + f1 2
 knit + f2 2
 knit + f3 2
@@ -26795,6 +26813,7 @@ knit - b8 1
 knit - b6 1
 knit - b4 1
 knit - b2 1
+miss - f1 1
 ;row: 35
 knit + b1 1
 knit + b3 1
@@ -26873,6 +26892,7 @@ knit + b133 1
 knit + b135 1
 knit + b137 1
 knit + b139 1
+miss + f140 1
 knit + f1 2
 knit + f2 2
 knit + f3 2
@@ -27636,6 +27656,7 @@ knit - b8 1
 knit - b6 1
 knit - b4 1
 knit - b2 1
+miss - f1 1
 ;row: 37
 knit + b1 1
 knit + b3 1
@@ -27715,6 +27736,7 @@ knit + b133 1
 knit + b135 1
 knit + b137 1
 knit + b139 1
+miss + f140 1
 knit + f1 2
 knit + f2 2
 knit + f3 2
@@ -28480,6 +28502,7 @@ knit - b8 1
 knit - b6 1
 knit - b4 1
 knit - b2 1
+miss - f1 1
 ;row: 39
 knit + b1 1
 knit + b3 1
@@ -29322,6 +29345,7 @@ knit - b8 1
 knit - b6 1
 knit - b4 1
 knit - b2 1
+miss - f1 1
 ;row: 41
 knit + b1 1
 knit + b3 1
@@ -30161,6 +30185,7 @@ knit - b8 1
 knit - b6 1
 knit - b4 1
 knit - b2 1
+miss - f1 1
 ;row: 43
 knit + b1 1
 knit + b3 1
@@ -30674,6 +30699,7 @@ knit - b8 4
 knit - b6 4
 knit - b4 4
 knit - b2 4
+miss - f1 4
 knit + b1 3
 knit + b3 3
 knit + b5 3
@@ -30765,6 +30791,7 @@ knit + b133 3
 knit + b135 3
 knit + b137 3
 knit + b139 3
+miss + f140 3
 knit - b140 2
 knit - b138 2
 knit - b136 2
@@ -31105,6 +31132,7 @@ knit + b133 2
 knit + b135 2
 knit + b137 2
 knit + b139 2
+miss + f140 2
 knit - b140 3
 knit - b138 3
 knit - b136 3
@@ -31190,6 +31218,7 @@ knit - b8 3
 knit - b6 3
 knit - b4 3
 knit - b2 3
+miss - f1 3
 knit + b1 4
 knit + b3 4
 knit + b5 4
@@ -31282,6 +31311,7 @@ knit + b133 4
 knit + b135 4
 knit + b137 4
 knit + b139 4
+miss + f140 4
 knit + b2 5
 knit + b4 5
 knit + b6 5
@@ -31520,6 +31550,7 @@ knit - b8 4
 knit - b6 4
 knit - b4 4
 knit - b2 4
+miss - f1 4
 knit + b1 3
 knit + b3 3
 knit + b5 3
@@ -31607,6 +31638,7 @@ knit + b133 3
 knit + b135 3
 knit + b137 3
 knit + b139 3
+miss + f140 3
 knit - b140 2
 knit - b138 2
 knit - b136 2
@@ -31949,6 +31981,7 @@ knit + b133 2
 knit + b135 2
 knit + b137 2
 knit + b139 2
+miss + f140 2
 knit - b140 3
 knit - b138 3
 knit - b136 3
@@ -32036,6 +32069,7 @@ knit - b8 3
 knit - b6 3
 knit - b4 3
 knit - b2 3
+miss - f1 3
 knit + b1 4
 knit + b3 4
 knit + b5 4
@@ -32128,6 +32162,7 @@ knit + b133 4
 knit + b135 4
 knit + b137 4
 knit + b139 4
+miss + f140 4
 knit + b2 5
 knit + b4 5
 knit + b6 5
@@ -32363,6 +32398,7 @@ knit - b8 4
 knit - b6 4
 knit - b4 4
 knit - b2 4
+miss - f1 4
 knit + b1 3
 knit + b3 3
 knit + b5 3
@@ -32443,6 +32479,7 @@ knit + b133 3
 knit + b135 3
 knit + b137 3
 knit + b139 3
+miss + f140 3
 knit - b140 2
 knit - b138 2
 knit - b136 2
@@ -32796,6 +32833,7 @@ knit + b133 2
 knit + b135 2
 knit + b137 2
 knit + b139 2
+miss + f140 2
 knit - b140 3
 knit - b138 3
 knit - b136 3
@@ -32876,6 +32914,7 @@ knit - f8 3
 knit - b6 3
 knit - b4 3
 knit - b2 3
+miss - f1 3
 knit + b1 4
 knit + b3 4
 knit + b5 4
@@ -32968,6 +33007,7 @@ knit + b133 4
 knit + b135 4
 knit + b137 4
 knit + b139 4
+miss + f140 4
 knit + b2 5
 knit + b4 5
 knit + b6 5
@@ -33206,6 +33246,7 @@ knit - b8 4
 knit - b6 4
 knit - b4 4
 knit - b2 4
+miss - f1 4
 knit + b1 3
 knit + b3 3
 knit + b5 3
@@ -33289,6 +33330,7 @@ knit + b133 3
 knit + b135 3
 knit + b137 3
 knit + b139 3
+miss + f140 3
 knit - b140 2
 knit - b138 2
 knit - b136 2
@@ -33641,6 +33683,7 @@ knit + b133 2
 knit + b135 2
 knit + b137 2
 knit + b139 2
+miss + f140 2
 knit - b140 3
 knit - b138 3
 knit - b136 3
@@ -33719,6 +33762,7 @@ knit - f8 3
 knit - b6 3
 knit - b4 3
 knit - b2 3
+miss - f1 3
 knit + b1 4
 knit + b3 4
 knit + b5 4
@@ -33817,6 +33861,7 @@ knit + b133 4
 knit + b135 4
 knit + b137 4
 knit + b139 4
+miss + f140 4
 knit + b2 5
 knit + b4 5
 knit + b6 5
@@ -34062,6 +34107,7 @@ knit - b8 4
 knit - b6 4
 knit - b4 4
 knit - b2 4
+miss - f1 4
 knit + b1 3
 knit + b3 3
 knit + b5 3
@@ -34138,6 +34184,7 @@ knit + b133 3
 knit + b135 3
 knit + b137 3
 knit + b139 3
+miss + f140 3
 knit - b140 2
 knit - b138 2
 knit - b136 2
@@ -34480,6 +34527,7 @@ knit + b133 2
 knit + b135 2
 knit + b137 2
 knit + b139 2
+miss + f140 2
 knit - b140 3
 knit - b138 3
 knit - b136 3
@@ -34557,6 +34605,7 @@ knit - f7 3
 knit - b6 3
 knit - b4 3
 knit - b2 3
+miss - f1 3
 knit + b1 4
 knit + b3 4
 knit + b5 4
@@ -34657,6 +34706,7 @@ knit + b133 4
 knit + b135 4
 knit + b137 4
 knit + b139 4
+miss + f140 4
 knit + b2 5
 knit + b4 5
 knit + b6 5
@@ -34902,6 +34952,7 @@ knit - b8 4
 knit - b6 4
 knit - b4 4
 knit - b2 4
+miss - f1 4
 knit + b1 3
 knit + b3 3
 knit + b5 3
@@ -34983,6 +35034,7 @@ knit + b133 3
 knit + b135 3
 knit + b137 3
 knit + b139 3
+miss + f140 3
 knit - b140 2
 knit - b138 2
 knit - b136 2
@@ -35330,6 +35382,7 @@ knit + b133 2
 knit + b135 2
 knit + b137 2
 knit + b139 2
+miss + f140 2
 knit - b140 3
 knit - b138 3
 knit - b136 3
@@ -35407,6 +35460,7 @@ knit - f7 3
 knit - f6 3
 knit - b4 3
 knit - b2 3
+miss - f1 3
 knit + b1 4
 knit + b3 4
 knit + b5 4
@@ -35505,6 +35559,7 @@ knit + b133 4
 knit + b135 4
 knit + b137 4
 knit + b139 4
+miss + f140 4
 ;row: 56
 knit - b140 4
 knit - b138 4
@@ -35606,6 +35661,7 @@ knit - b8 4
 knit - b6 4
 knit - b4 4
 knit - b2 4
+miss - f1 4
 knit + b1 3
 knit + b3 3
 knit + b5 3
@@ -35683,6 +35739,7 @@ knit + b133 3
 knit + b135 3
 knit + b137 3
 knit + b139 3
+miss + f140 3
 knit - b140 2
 knit - b138 2
 knit - b136 2
@@ -36032,6 +36089,7 @@ knit + b133 2
 knit + b135 2
 knit + b137 2
 knit + b139 2
+miss + f140 2
 knit - b140 3
 knit - b138 3
 knit - b136 3
@@ -36108,6 +36166,7 @@ knit - f7 3
 knit - f6 3
 knit - b4 3
 knit - b2 3
+miss - f1 3
 knit + b1 4
 knit + b3 4
 knit + b5 4
@@ -36208,6 +36267,7 @@ knit + b133 4
 knit + b135 4
 knit + b137 4
 knit + b139 4
+miss + f140 4
 ;row: 58
 knit - b140 4
 knit - b138 4
@@ -36309,6 +36369,7 @@ knit - b8 4
 knit - b6 4
 knit - b4 4
 knit - b2 4
+miss - f1 4
 knit + b1 3
 knit + b3 3
 knit + f5 3
@@ -36384,6 +36445,7 @@ knit + b133 3
 knit + b135 3
 knit + b137 3
 knit + b139 3
+miss + f140 3
 knit - b140 2
 knit - b138 2
 knit - b136 2
@@ -36741,6 +36803,7 @@ knit + b133 2
 knit + b135 2
 knit + b137 2
 knit + b139 2
+miss + f140 2
 knit - b140 3
 knit - b138 3
 knit - b136 3
@@ -36816,6 +36879,7 @@ knit - f6 3
 knit - f5 3
 knit - b4 3
 knit - b2 3
+miss - f1 3
 knit + b1 4
 knit + b3 4
 knit + b5 4
@@ -36911,6 +36975,7 @@ knit + b133 4
 knit + b135 4
 knit + b137 4
 knit + b139 4
+miss + f140 4
 ;row: 60
 knit - b140 4
 knit - b138 4
@@ -37007,6 +37072,7 @@ knit - b8 4
 knit - b6 4
 knit - b4 4
 knit - b2 4
+miss - f1 4
 knit + b1 3
 knit + b3 3
 knit + f5 3
@@ -37084,6 +37150,7 @@ knit + b133 3
 knit + b135 3
 knit + b137 3
 knit + b139 3
+miss + f140 3
 knit - b140 2
 knit - b138 2
 knit - b136 2
@@ -37440,6 +37507,7 @@ knit + b133 2
 knit + b135 2
 knit + b137 2
 knit + b139 2
+miss + f140 2
 knit - b140 3
 knit - b138 3
 knit - b136 3
@@ -37516,6 +37584,7 @@ knit - f6 3
 knit - f5 3
 knit - b4 3
 knit - b2 3
+miss - f1 3
 knit + b1 4
 knit + b3 4
 knit + b5 4
@@ -37615,6 +37684,7 @@ knit + b133 4
 knit + b135 4
 knit + b137 4
 knit + b139 4
+miss + f140 4
 knit + b2 5
 knit + b4 5
 knit + b6 5
@@ -37855,6 +37925,7 @@ knit - b8 4
 knit - b6 4
 knit - b4 4
 knit - b2 4
+miss - f1 4
 knit + b1 3
 knit + b3 3
 knit + f4 3
@@ -37931,6 +38002,7 @@ knit + b133 3
 knit + b135 3
 knit + b137 3
 knit + b139 3
+miss + f140 3
 knit - b140 2
 knit - b138 2
 knit - b136 2
@@ -38285,6 +38357,7 @@ knit + b133 2
 knit + b135 2
 knit + b137 2
 knit + b139 2
+miss + f140 2
 knit - b140 3
 knit - b138 3
 knit - b136 3
@@ -38362,6 +38435,7 @@ knit - f6 3
 knit - f5 3
 knit - f4 3
 knit - b2 3
+miss - f1 3
 knit + b1 4
 knit + b3 4
 knit + b5 4
@@ -38461,6 +38535,7 @@ knit + b133 4
 knit + b135 4
 knit + b137 4
 knit + b139 4
+miss + f140 4
 ;row: 64
 knit + b2 5
 knit + b4 5
@@ -38879,6 +38954,7 @@ knit - b8 1
 knit - b6 1
 knit - b4 1
 knit - b2 1
+miss - f1 1
 ;row: 65
 knit + b1 1
 knit + b3 1
@@ -39723,6 +39799,7 @@ knit - b8 1
 knit - b6 1
 knit - b4 1
 knit - b2 1
+miss - f1 1
 ;row: 67
 knit + b1 1
 knit + b3 1
@@ -40213,6 +40290,7 @@ knit - b8 6
 knit - b6 6
 knit - b4 6
 knit - b2 6
+miss - f1 6
 ;row: 68
 knit + b1 6
 knit + b3 6
@@ -40285,6 +40363,7 @@ knit + b133 6
 knit + b135 6
 knit + b137 6
 knit + b139 6
+miss + f140 6
 knit + b2 5
 knit + b4 5
 knit + b6 5
@@ -40705,6 +40784,7 @@ knit - b8 1
 knit - b6 1
 knit - b4 1
 knit - b2 1
+miss - f1 1
 ;row: 69
 knit + b1 1
 knit + b3 1
@@ -41197,6 +41277,7 @@ knit - b8 6
 knit - b6 6
 knit - b4 6
 knit - b2 6
+miss - f1 6
 ;row: 70
 knit + b1 6
 knit + b3 6
@@ -41270,6 +41351,7 @@ knit + b133 6
 knit + b135 6
 knit + b137 6
 knit + b139 6
+miss + f140 6
 knit + b2 5
 knit + f3 5
 knit + b4 5
@@ -41685,6 +41767,7 @@ knit - b8 1
 knit - b6 1
 knit - b4 1
 knit - b2 1
+miss - f1 1
 ;row: 71
 knit + b1 1
 knit + b3 1
@@ -42179,6 +42262,7 @@ knit - b8 6
 knit - b6 6
 knit - b4 6
 knit - b2 6
+miss - f1 6
 ;row: 72
 knit + b1 6
 knit + b3 6
@@ -42255,6 +42339,7 @@ knit + b133 6
 knit + b135 6
 knit + b137 6
 knit + b139 6
+miss + f140 6
 knit + b2 5
 knit + f3 5
 knit + f4 5
@@ -42667,6 +42752,7 @@ knit - b8 1
 knit - b6 1
 knit - b4 1
 knit - b2 1
+miss - f1 1
 ;row: 73
 knit + b1 1
 knit + b3 1
@@ -43157,6 +43243,7 @@ knit - b8 6
 knit - b6 6
 knit - b4 6
 knit - b2 6
+miss - f1 6
 ;row: 74
 knit + b1 6
 knit + b3 6
@@ -43232,6 +43319,7 @@ knit + b133 6
 knit + b135 6
 knit + b137 6
 knit + b139 6
+miss + f140 6
 knit + b2 5
 knit + f4 5
 knit + f5 5
@@ -43652,6 +43740,7 @@ knit - b8 1
 knit - b6 1
 knit - b4 1
 knit - b2 1
+miss - f1 1
 ;row: 75
 knit + b1 1
 knit + b3 1
@@ -44142,6 +44231,7 @@ knit - b8 6
 knit - b6 6
 knit - b4 6
 knit - b2 6
+miss - f1 6
 ;row: 76
 knit + b1 6
 knit + b3 6
@@ -44215,6 +44305,7 @@ knit + b133 6
 knit + b135 6
 knit + b137 6
 knit + b139 6
+miss + f140 6
 knit + f2 5
 knit + f3 5
 knit + f4 5
@@ -44634,6 +44725,7 @@ knit - f8 1
 knit - b6 1
 knit - b4 1
 knit - b2 1
+miss - f1 1
 ;row: 77
 knit + b1 1
 knit + b3 1
@@ -45127,6 +45219,7 @@ knit - b8 6
 knit - b6 6
 knit - b4 6
 knit - b2 6
+miss - f1 6
 ;row: 78
 knit + b1 6
 knit + b3 6
@@ -45200,6 +45293,7 @@ knit + b133 6
 knit + b135 6
 knit + b137 6
 knit + b139 6
+miss + f140 6
 knit + f1 5
 knit + f2 5
 knit + f3 5
@@ -45618,6 +45712,7 @@ knit - b8 1
 knit - b6 1
 knit - b4 1
 knit - b2 1
+miss - f1 1
 ;row: 79
 knit + b1 1
 knit + b3 1
@@ -46112,6 +46207,7 @@ knit - b8 6
 knit - b6 6
 knit - b4 6
 knit - b2 6
+miss - f1 6
 ;row: 80
 knit + b1 6
 knit + b3 6
@@ -46184,6 +46280,7 @@ knit + b133 6
 knit + b135 6
 knit + b137 6
 knit + b139 6
+miss + f140 6
 knit + f1 5
 knit + f2 5
 knit + f3 5
@@ -46603,6 +46700,7 @@ knit - b8 1
 knit - b6 1
 knit - b4 1
 knit - b2 1
+miss - f1 1
 ;row: 81
 knit + b1 1
 knit + b3 1
@@ -47441,6 +47539,7 @@ knit - b8 1
 knit - b6 1
 knit - b4 1
 knit - b2 1
+miss - f1 1
 ;row: 83
 knit + b1 1
 knit + b3 1
@@ -48282,6 +48381,7 @@ knit - b8 1
 knit - b6 1
 knit - b4 1
 knit - b2 1
+miss - f1 1
 ;row: 85
 knit + b1 1
 knit + b3 1
@@ -48772,6 +48872,7 @@ knit - b8 6
 knit - b6 6
 knit - b4 6
 knit - b2 6
+miss - f1 6
 knit + f1 5
 knit + f2 5
 knit + f3 5
@@ -48845,6 +48946,7 @@ knit + b133 5
 knit + b135 5
 knit + b137 5
 knit + b139 5
+miss + f140 5
 knit - b140 4
 knit - b138 4
 knit - b136 4
@@ -48943,6 +49045,7 @@ knit - f7 4
 knit - f6 4
 knit - b4 4
 knit - b2 4
+miss - f1 4
 knit + b1 3
 knit + b3 3
 knit + b5 3
@@ -49017,6 +49120,7 @@ knit + b133 3
 knit + b135 3
 knit + b137 3
 knit + b139 3
+miss + f140 3
 knit - b140 2
 knit - b138 2
 knit - b136 2
@@ -49116,6 +49220,7 @@ knit - b6 2
 knit - f5 2
 knit - b4 2
 knit - b2 2
+miss - f1 2
 knit - f140 1
 knit - f139 1
 knit - f138 1
@@ -49372,6 +49477,7 @@ knit + b133 2
 knit + b135 2
 knit + b137 2
 knit + b139 2
+miss + f140 2
 knit - b140 3
 knit - b138 3
 knit - b136 3
@@ -49443,6 +49549,7 @@ knit - b8 3
 knit - b6 3
 knit - b4 3
 knit - b2 3
+miss - f1 3
 knit + b1 4
 knit + b3 4
 knit + b5 4
@@ -49542,6 +49649,7 @@ knit + b133 4
 knit + b135 4
 knit + b137 4
 knit + b139 4
+miss + f140 4
 knit - b140 5
 knit - b138 5
 knit - b136 5
@@ -49686,6 +49794,7 @@ knit + b133 6
 knit + b135 6
 knit + b137 6
 knit + b139 6
+miss + f140 6
 ;row: 88
 knit - b140 6
 knit - b138 6
@@ -49759,6 +49868,7 @@ knit - b8 6
 knit - b6 6
 knit - b4 6
 knit - b2 6
+miss - f1 6
 knit + f1 5
 knit + f2 5
 knit + f3 5
@@ -49834,6 +49944,7 @@ knit + b133 5
 knit + b135 5
 knit + b137 5
 knit + b139 5
+miss + f140 5
 knit - b140 4
 knit - b138 4
 knit - b136 4
@@ -49930,6 +50041,7 @@ knit - f6 4
 knit - f5 4
 knit - b4 4
 knit - b2 4
+miss - f1 4
 knit + b1 3
 knit + b3 3
 knit + b5 3
@@ -50004,6 +50116,7 @@ knit + b133 3
 knit + b135 3
 knit + b137 3
 knit + b139 3
+miss + f140 3
 knit - b140 2
 knit - b138 2
 knit - b136 2
@@ -50102,6 +50215,7 @@ knit - b8 2
 knit - b6 2
 knit - b4 2
 knit - b2 2
+miss - f1 2
 knit - f140 1
 knit - f139 1
 knit - f138 1
@@ -50351,6 +50465,7 @@ knit + b133 2
 knit + b135 2
 knit + b137 2
 knit + b139 2
+miss + f140 2
 knit - b140 3
 knit - b138 3
 knit - b136 3
@@ -50425,6 +50540,7 @@ knit - b8 3
 knit - b6 3
 knit - b4 3
 knit - b2 3
+miss - f1 3
 knit + b1 4
 knit + b3 4
 knit + f5 4
@@ -50520,6 +50636,7 @@ knit + b133 4
 knit + b135 4
 knit + b137 4
 knit + b139 4
+miss + f140 4
 knit - b140 5
 knit - b138 5
 knit - b136 5
@@ -50668,6 +50785,7 @@ knit + b133 6
 knit + b135 6
 knit + b137 6
 knit + b139 6
+miss + f140 6
 ;row: 90
 knit - b140 6
 knit - b138 6
@@ -50741,6 +50859,7 @@ knit - b8 6
 knit - b6 6
 knit - b4 6
 knit - b2 6
+miss - f1 6
 knit + f1 5
 knit + f2 5
 knit + f3 5
@@ -50816,6 +50935,7 @@ knit + b133 5
 knit + b135 5
 knit + b137 5
 knit + b139 5
+miss + f140 5
 knit - b140 4
 knit - b138 4
 knit - b136 4
@@ -50914,6 +51034,7 @@ knit - f6 4
 knit - f5 4
 knit - b4 4
 knit - b2 4
+miss - f1 4
 knit + b1 3
 knit + b3 3
 knit + f4 3
@@ -50989,6 +51110,7 @@ knit + b133 3
 knit + b135 3
 knit + b137 3
 knit + b139 3
+miss + f140 3
 knit - b140 2
 knit - b138 2
 knit - b136 2
@@ -51085,6 +51207,7 @@ knit - b8 2
 knit - b6 2
 knit - b4 2
 knit - b2 2
+miss - f1 2
 knit - f140 1
 knit - f139 1
 knit - f138 1
@@ -51333,6 +51456,7 @@ knit + b133 2
 knit + b135 2
 knit + b137 2
 knit + b139 2
+miss + f140 2
 knit - b140 3
 knit - b138 3
 knit - b136 3
@@ -51409,6 +51533,7 @@ knit - b8 3
 knit - b6 3
 knit - f4 3
 knit - b2 3
+miss - f1 3
 knit + b1 4
 knit + b3 4
 knit + f5 4
@@ -51504,6 +51629,7 @@ knit + f133 4
 knit + b135 4
 knit + b137 4
 knit + b139 4
+miss + f140 4
 knit - b140 5
 knit - b138 5
 knit - b136 5
@@ -51650,6 +51776,7 @@ knit + b133 6
 knit + b135 6
 knit + b137 6
 knit + b139 6
+miss + f140 6
 ;row: 92
 knit - b140 6
 knit - b138 6
@@ -51725,6 +51852,7 @@ knit - b8 6
 knit - b6 6
 knit - b4 6
 knit - b2 6
+miss - f1 6
 knit + f1 5
 knit + f2 5
 knit + f3 5
@@ -51797,6 +51925,7 @@ knit + b133 5
 knit + b135 5
 knit + b137 5
 knit + b139 5
+miss + f140 5
 knit - b140 4
 knit - b138 4
 knit - b136 4
@@ -51889,6 +52018,7 @@ knit - f6 4
 knit - f5 4
 knit - b4 4
 knit - b2 4
+miss - f1 4
 knit + b1 3
 knit + b3 3
 knit + b5 3
@@ -51970,6 +52100,7 @@ knit + b133 3
 knit + b135 3
 knit + b137 3
 knit + b139 3
+miss + f140 3
 knit - b140 2
 knit - b138 2
 knit - b136 2
@@ -52068,6 +52199,7 @@ knit - b8 2
 knit - b6 2
 knit - f4 2
 knit - b2 2
+miss - f1 2
 knit - f140 1
 knit - f139 1
 knit - f138 1
@@ -52313,6 +52445,7 @@ knit + b133 2
 knit + b135 2
 knit + b137 2
 knit + b139 2
+miss + f140 2
 knit - b140 3
 knit - b138 3
 knit - b136 3
@@ -52391,6 +52524,7 @@ knit - b8 3
 knit - b6 3
 knit - b4 3
 knit - b2 3
+miss - f1 3
 knit + b1 4
 knit + b3 4
 knit + f5 4
@@ -52481,6 +52615,7 @@ knit + f135 4
 knit + f136 4
 knit + f137 4
 knit + b139 4
+miss + f140 4
 knit - b140 5
 knit - b138 5
 knit - b136 5
@@ -52634,6 +52769,7 @@ knit + b133 6
 knit + b135 6
 knit + b137 6
 knit + b139 6
+miss + f140 6
 ;row: 94
 knit - b140 6
 knit - b138 6
@@ -52711,6 +52847,7 @@ knit - b8 6
 knit - b6 6
 knit - b4 6
 knit - b2 6
+miss - f1 6
 knit + f1 5
 knit + f2 5
 knit + f3 5
@@ -52790,6 +52927,7 @@ knit + b133 5
 knit + b135 5
 knit + b137 5
 knit + b139 5
+miss + f140 5
 knit - b140 4
 knit - f139 4
 knit - f138 4
@@ -52883,6 +53021,7 @@ knit - f6 4
 knit - f5 4
 knit - f4 4
 knit - b2 4
+miss - f1 4
 knit + b1 3
 knit + b3 3
 knit + b5 3
@@ -52958,6 +53097,7 @@ knit + b133 3
 knit + b135 3
 knit + b137 3
 knit + b139 3
+miss + f140 3
 knit - b140 2
 knit - b138 2
 knit - b136 2
@@ -53055,6 +53195,7 @@ knit - b8 2
 knit - b6 2
 knit - b4 2
 knit - b2 2
+miss - f1 2
 knit - f140 1
 knit - b139 1
 knit - b137 1
@@ -53303,6 +53444,7 @@ knit + b133 2
 knit + b135 2
 knit + b137 2
 knit + b139 2
+miss + f140 2
 knit - b140 3
 knit - b138 3
 knit - b136 3
@@ -53376,6 +53518,7 @@ knit - b8 3
 knit - b6 3
 knit - b4 3
 knit - b2 3
+miss - f1 3
 knit + b1 4
 knit + b3 4
 knit + f4 4
@@ -53468,6 +53611,7 @@ knit + f136 4
 knit + f137 4
 knit + f138 4
 knit + f139 4
+miss + f140 4
 knit - b140 5
 knit - b138 5
 knit - b136 5
@@ -53617,6 +53761,7 @@ knit + b133 6
 knit + b135 6
 knit + b137 6
 knit + b139 6
+miss + f140 6
 ;row: 96
 knit - b140 6
 knit - b138 6
@@ -53689,6 +53834,7 @@ knit - b8 6
 knit - b6 6
 knit - b4 6
 knit - b2 6
+miss - f1 6
 out 6
 knit + f1 5
 knit + f2 5
@@ -53765,6 +53911,7 @@ knit + b133 5
 knit + b135 5
 knit + b137 5
 knit + b139 5
+miss + f140 5
 knit - f140 4
 knit - f139 4
 knit - f138 4
@@ -53855,6 +54002,7 @@ knit - f6 4
 knit - f5 4
 knit - f4 4
 knit - b2 4
+miss - f1 4
 knit + b1 3
 knit + f3 3
 knit + b5 3
@@ -53927,6 +54075,7 @@ knit + b133 3
 knit + b135 3
 knit + b137 3
 knit + b139 3
+miss + f140 3
 knit - b140 2
 knit - b138 2
 knit - b136 2
@@ -54034,6 +54183,7 @@ knit - f8 2
 knit - b6 2
 knit - b4 2
 knit - b2 2
+miss - f1 2
 knit - b139 1
 knit - b137 1
 knit - b135 1
@@ -54293,6 +54443,7 @@ knit + b133 2
 knit + b135 2
 knit + b137 2
 knit + b139 2
+miss + f140 2
 knit - b140 3
 knit - b138 3
 knit - b136 3
@@ -54367,6 +54518,7 @@ knit - b6 3
 knit - b4 3
 knit - f3 3
 knit - b2 3
+miss - f1 3
 knit + b1 4
 knit + b3 4
 knit + f4 4
@@ -54603,6 +54755,7 @@ knit + b133 5
 knit + b135 5
 knit + b137 5
 knit + b139 5
+miss + f140 5
 knit - f140 4
 knit - f139 4
 knit - f138 4
@@ -54689,6 +54842,7 @@ knit - f6 4
 knit - f5 4
 knit - f4 4
 knit - b2 4
+miss - f1 4
 knit + b1 3
 knit + b3 3
 knit + b5 3
@@ -54761,6 +54915,7 @@ knit + b133 3
 knit + b135 3
 knit + b137 3
 knit + b139 3
+miss + f140 3
 knit - b140 2
 knit - b138 2
 knit - b136 2
@@ -54880,6 +55035,7 @@ knit - b6 2
 knit - b4 2
 knit - f3 2
 knit - b2 2
+miss - f1 2
 knit - b139 1
 knit - b137 1
 knit - b135 1
@@ -55140,6 +55296,7 @@ knit + b133 2
 knit + b135 2
 knit + b137 2
 knit + b139 2
+miss + f140 2
 knit - b140 3
 knit - b138 3
 knit - b136 3
@@ -55211,6 +55368,7 @@ knit - b8 3
 knit - b6 3
 knit - b4 3
 knit - b2 3
+miss - f1 3
 knit + b1 4
 knit + b3 4
 knit + f4 4
@@ -55444,6 +55602,7 @@ knit + b133 5
 knit + b135 5
 knit + b137 5
 knit + b139 5
+miss + f140 5
 knit - f140 4
 knit - f139 4
 knit - f138 4
@@ -55531,6 +55690,7 @@ knit - f5 4
 knit - f4 4
 knit - f3 4
 knit - b2 4
+miss - f1 4
 knit + b1 3
 knit + b3 3
 knit + b5 3
@@ -55602,6 +55762,7 @@ knit + b133 3
 knit + b135 3
 knit + b137 3
 knit + b139 3
+miss + f140 3
 knit - b140 2
 knit - b138 2
 knit - b136 2
@@ -55720,6 +55881,7 @@ knit - b8 2
 knit - b6 2
 knit - b4 2
 knit - b2 2
+miss - f1 2
 knit - b139 1
 knit - b137 1
 knit - b135 1
@@ -58244,8 +58406,21 @@ xfer f139 b140
 rack 0
 knit + b140 5
 xfer b140 f140
-rack -1
-xfer f140 b141
-rack 0
-knit + b141 5
+knit + b140 5
+knit + b140 5
+knit + b140 5
+knit + b140 5
+knit + b140 5
+knit + b140 5
+knit + b140 5
+knit + b140 5
+knit + b140 5
+knit + b140 5
+knit + b140 5
+knit + b140 5
+knit + b140 5
+knit + b140 5
+knit + b140 5
+knit + b140 5
 out 5
+drop b140
