@@ -98,9 +98,15 @@ const STITCH_NUMBERS = {
 	'65.25':100
 };
 
-//these give the expected range of stopping distances:
-const MIN_STOPPING_DISTANCE = 4;
-const MAX_STOPPING_DISTANCE = 6;
+//parking locations for each carrier:
+const CARRIER_PARKING = [
+	-11.5,
+	-9.5,
+	-9.5,
+	-7.5,
+	-7.5,
+	-7.5,
+];
 
 //special op, merges with knit/tuck/etc:
 const OP_SOFT_MISS = { name:'OP_SOFT_MISS' };
@@ -639,8 +645,7 @@ let passes = [];
 					slotCs[slot].forEach(function(c){
 						carriers[c].kick = {
 							needle:new BedNeedle('f', parseInt(slot)),
-							direction:d,
-							minDistance:MIN_STOPPING_DISTANCE
+							direction:d
 						};
 					});
 				}
@@ -782,7 +787,7 @@ let passes = [];
 			//last -- where carrier is attached
 			//kick -- where carrier is parked
 			carriers[c].last = { needle:n, direction:d };
-			carriers[c].kick = { needle:n, direction:d, minDistance:MIN_STOPPING_DISTANCE };
+			carriers[c].kick = { needle:n, direction:d };
 		});
 	}
 
@@ -856,7 +861,7 @@ let passes = [];
 				if (!carriers[c].last) throw "ERROR: Can't bring out carrier '" + c + "' -- it hasn't yet stitched.";
 			});
 
-			//make a pass with (at least) a single rightward miss from which to take the carrier set out:
+			//make a pass with (at least) a single *leftward* miss from which to take the carrier out:
 			let s = -Infinity;
 			let n = null;
 			cs.forEach(function(c){
@@ -1101,12 +1106,12 @@ let passes = [];
 	//yarn carrier state:
 	//TODO: verify these starting positions (maybe they don't matter?)
 	let carrierAt = {
-		'1':-11.5,
-		'2':-9.5,
-		'3':-9.5,
-		'4':-7.5,
-		'5':-7.5,
-		'6':-7.5,
+		'1':CARRIER_PARKING[0],
+		'2':CARRIER_PARKING[1],
+		'3':CARRIER_PARKING[2],
+		'4':CARRIER_PARKING[3],
+		'5':CARRIER_PARKING[4],
+		'6':CARRIER_PARKING[5]
 	};
 
 	//stopping distances past last-used needle location:
@@ -1324,6 +1329,9 @@ let passes = [];
 				roller:100,
 			};
 			if (pass.comment) kpass.comment = pass.comment;
+			if (pass.gripper === GRIPPER_OUT) {
+				kpass.comment = (kpass.comment || "") + "; carrier out";
+			}
 
 			//set pass direction and carrier info:
 			if (pass.carriers.length === 0) {
@@ -1340,6 +1348,13 @@ let passes = [];
 				if (kpass.direction === DIRECTION_LEFT) {
 					kpass.carrierRight = carrierAt[kpass.carrier];
 					kpass.carrierLeft = pass.minSlot + slotToNeedle - CARRIER_STOP;
+					if (pass.gripper === GRIPPER_OUT) {
+						console.log("Carrier: " + JSON.stringify(pass.carriers[0]));
+						const parkingSpot = CARRIER_PARKING[parseInt(pass.carriers[0])-1];
+						console.log("Will park " + pass.carriers[0] + " at " + kpass.carrierLeft);
+						console.assert(parkingSpot <= kpass.carrierLeft, "Parking spot should be left of any slots.");
+						kpass.carrierLeft = parkingSpot;
+					}
 					carrierAt[kpass.carrier] = kpass.carrierLeft;
 				} else { console.assert(kpass.direction === DIRECTION_RIGHT);
 					kpass.carrierLeft = carrierAt[kpass.carrier];
@@ -1366,7 +1381,11 @@ let passes = [];
 				//shift previous pass's stop as well:
 				if (kprev) kprev.carriageRight = rightStop;
 				//stopping point:
-				leftStop = pass.minSlot + slotToNeedle - CARRIAGE_STOP;
+				if (pass.gripper === GRIPPER_OUT) {
+					leftStop = kpass.carrierLeft;
+				} else {
+					leftStop = pass.minSlot + slotToNeedle - CARRIAGE_STOP;
+				}
 			} else {console.assert(kpass.direction === DIRECTION_RIGHT);
 				//starting point:
 				leftStop = Math.min(leftStop, pass.minSlot + slotToNeedle - CARRIAGE_STOP);
