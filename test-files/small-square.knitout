@@ -15,12 +15,30 @@ tuck + f7 5
 tuck + f9 5
 miss + f10 5
 
+
+in 6
+
+tuck + f1 6
+tuck + f3 6
+tuck + f5 6
+tuck + f7 6
+tuck + f9 6
+miss + f10 6
+
 tuck - f10 5
 tuck - f8 5
 tuck - f6 5
 tuck - f4 5
 tuck - f2 5
 miss - f1 5
+
+tuck - f10 6
+tuck - f8 6
+tuck - f6 6
+tuck - f4 6
+tuck - f2 6
+miss - f1 6
+
 
 knit + f1 5
 knit + f2 5
@@ -32,6 +50,8 @@ knit + f7 5
 knit + f8 5
 knit + f9 5
 knit + f10 5
+
+out 6
 
 ;some full-gauge rib for a moment:
 

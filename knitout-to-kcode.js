@@ -1344,6 +1344,31 @@ let passes = [];
 
 				kpass.carrier = pass.carriers[0];
 				console.assert(kpass.carrier in carrierAt, "carrier '" + kpass.carrier + "' should be in carrierAt list.");
+
+				//function to 'bump' a carrier over so it doesn't stack:
+				function bump(carrier, stop, add) {
+					let newStop = stop;
+					let overlap = true;
+					while (overlap) {
+						overlap = false;
+						for (let cn in carrierAt) {
+							if (cn !== carrier) {
+								if (carrierAt[cn] === newStop) {
+									overlap = true;
+									break;
+								}
+							}
+						}
+						if (overlap) {
+							newStop += add;
+						}
+					}
+					if (newStop !== stop) {
+						console.log("Note: bumpped carrier " + carrier + " from " + stop + " to " + newStop + " to avoid other carriers.");
+					}
+					return newStop;
+				}
+
 				//set carrier stopping points:
 				if (kpass.direction === DIRECTION_LEFT) {
 					kpass.carrierRight = carrierAt[kpass.carrier];
@@ -1354,11 +1379,15 @@ let passes = [];
 						console.log("Will park " + pass.carriers[0] + " at " + kpass.carrierLeft);
 						console.assert(parkingSpot <= kpass.carrierLeft, "Parking spot should be left of any slots.");
 						kpass.carrierLeft = parkingSpot;
+					} else {
+						//don't bump when parking carriers:
+						kpass.carrierLeft = bump(kpass.carrier, kpass.carrierLeft, -1.0); //bump over to avoid stacking
 					}
 					carrierAt[kpass.carrier] = kpass.carrierLeft;
 				} else { console.assert(kpass.direction === DIRECTION_RIGHT);
 					kpass.carrierLeft = carrierAt[kpass.carrier];
 					kpass.carrierRight = pass.maxSlot + slotToNeedle + CARRIER_STOP;
+					kpass.carrierRight = bump(kpass.carrier, kpass.carrierRight, 1.0); //bump over to avoid stacking
 					carrierAt[kpass.carrier] = kpass.carrierRight;
 				}
 			}
@@ -1381,11 +1410,8 @@ let passes = [];
 				//shift previous pass's stop as well:
 				if (kprev) kprev.carriageRight = rightStop;
 				//stopping point:
-				if (pass.gripper === GRIPPER_OUT) {
-					leftStop = kpass.carrierLeft;
-				} else {
-					leftStop = pass.minSlot + slotToNeedle - CARRIAGE_STOP;
-				}
+				leftStop = pass.minSlot + slotToNeedle - CARRIAGE_STOP;
+				if (kpass.carrierLeft) leftStop = Math.min(leftStop, kpass.carrierLeft);
 			} else {console.assert(kpass.direction === DIRECTION_RIGHT);
 				//starting point:
 				leftStop = Math.min(leftStop, pass.minSlot + slotToNeedle - CARRIAGE_STOP);
@@ -1394,6 +1420,7 @@ let passes = [];
 				if (kprev) kprev.carriageLeft = leftStop;
 				//stopping point:
 				rightStop = pass.maxSlot + slotToNeedle + CARRIAGE_STOP;
+				if (kpass.carrierRight) rightStop = Math.max(rightStop, kpass.carrierRight);
 			}
 			kpass.carriageLeft = leftStop;
 			kpass.carriageRight = rightStop;
