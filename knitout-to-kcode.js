@@ -241,7 +241,7 @@ function Pass(info) {
 	//direction: one of the DIRECTION_* constants
 	//carriers: array of carriers, possibly of zero length
 	//gripper: one of the GRIPPER_* constants or undefined
-	['type', 'slots', 'direction', 'carriers', 'gripper', 'racking', 'pause', 'speed'].forEach(function(name){
+	['type', 'slots', 'direction', 'carriers', 'stitch', 'gripper', 'racking', 'pause', 'speed'].forEach(function(name){
 		if (name in info) this[name] = info[name];
 	}, this);
 	if (!('slots' in this)) this.slots = {};
@@ -921,7 +921,8 @@ let passes = [];
 		} else if (op === 'x-speed-number') {
 			console.warn("WARNING: x-speed-number not supported on this machine (though, perhaps, it should be)");
 		} else if (op === 'x-stitch-number') {
-			console.warn("WARNING: x-stitch-number not supported on this machine (though, perhaps, it should be)");
+			stitch = args[0]; //new
+			//console.warn("WARNING: x-stitch-number not supported on this machine (though, perhaps, it should be)");
 		} else if (op === 'miss' || op === 'tuck' || op === 'knit') {
 			let d = args.shift();
 			let n = new BedNeedle(args.shift());
@@ -1205,20 +1206,20 @@ let passes = [];
 				for (let i = 0; i < 15; ++i) {
 					xpass.FRNT += '.';
 					xpass.REAR += '.';
-					xpass.STIF += '4'; //TODO
-					xpass.STIR += '4'; //TODO
+					xpass.STIF += '3'; //TODO: maybe add x-xfer-stitch-number extension? //new
+					xpass.STIR += '3'; //TODO //new
 				}
 				for (let n = 0; n <= 252; ++n) {
 					xpass.FRNT += '_';
 					xpass.REAR += '_';
-					xpass.STIF += '4'; //TODO
-					xpass.STIR += '4'; //TODO
+					xpass.STIF += '3'; //TODO //new
+					xpass.STIR += '3'; //TODO //new
 				}
 				for (let i = 0; i < 15; ++i) {
 					xpass.FRNT += '.';
 					xpass.REAR += '.';
-					xpass.STIF += '4'; //TODO
-					xpass.STIR += '4'; //TODO
+					xpass.STIF += '3'; //TODO //new
+					xpass.STIR += '3'; //TODO //new
 				}
 
 				function set(str, n) {
@@ -1325,6 +1326,7 @@ let passes = [];
 			let kpass = {
 				RACK:rack,
 				type:pass.type.kcode,
+				stitch:pass.stitch, //new
 				speed:100,
 				roller:100,
 			};
@@ -1434,8 +1436,8 @@ let passes = [];
 			for (let i = 0; i < 15; ++i) {
 				kpass.FRNT += '.';
 				kpass.REAR += '.';
-				kpass.STIF += '5'; //TODO
-				kpass.STIR += '5'; //TODO
+				kpass.STIF += kpass.stitch; //new
+				kpass.STIR += kpass.stitch; //new
 			}
 			for (let n = 0; n <= 252; ++n) {
 				const f = frontNeedleToSlot(n);
@@ -1450,14 +1452,14 @@ let passes = [];
 				} else {
 					kpass.REAR += '_';
 				}
-				kpass.STIF += '5'; //TODO
-				kpass.STIR += '5'; //TODO
+				kpass.STIF += kpass.stitch; //new
+				kpass.STIR += kpass.stitch; //new
 			}
 			for (let i = 0; i < 15; ++i) {
 				kpass.FRNT += '.';
 				kpass.REAR += '.';
-				kpass.STIF += '5'; //TODO
-				kpass.STIR += '5'; //TODO
+				kpass.STIF += kpass.stitch; //new
+				kpass.STIR += kpass.stitch; //new
 			}
 			kcodePasses.push(kpass);
 			nextDirection = (nextDirection === DIRECTION_RIGHT ? DIRECTION_LEFT : DIRECTION_RIGHT);
