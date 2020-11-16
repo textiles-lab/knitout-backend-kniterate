@@ -540,7 +540,7 @@ let passes = [];
 	let racking = 0.0; //racking starts centered
 	let stitch = 5; //machine-specific stitch number
 	let xferStitch = 0; //machine-specific stitch number for transfers; 0 => default
-	let speed = 0; //machine-specific speed number
+	let speed = 100; //machine-specific speed number
 	let pausePending = false; //optional stop before next instruction, please
 	
 	let roller = 100;
