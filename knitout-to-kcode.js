@@ -241,7 +241,7 @@ function Pass(info) {
 	//direction: one of the DIRECTION_* constants
 	//carriers: array of carriers, possibly of zero length
 	//gripper: one of the GRIPPER_* constants or undefined
-	['type', 'slots', 'direction', 'carriers', 'stitch', 'gripper', 'racking', 'pause', 'speed'].forEach(function(name){
+	['type', 'slots', 'direction', 'carriers', 'stitch', 'roller', 'gripper', 'racking', 'pause', 'speed'].forEach(function(name){
 		if (name in info) this[name] = info[name];
 	}, this);
 	if (!('slots' in this)) this.slots = {};
@@ -904,13 +904,12 @@ let passes = [];
 			if (!/^[+-]?\d*\.?\d+$/.test(args[0])) throw "ERROR: racking must be a number.";
 			let newRacking = parseFloat(args.shift());
 			let frac = newRacking - Math.floor(newRacking);
-			let quarter_frac = (frac == 0.25); //new
+			let quarter_frac = (frac == 0.25);
 			if (quarter_frac) {
 				newRacking += 0.25;
 				frac = newRacking - Math.floor(newRacking);
 			}
- 			//if (frac != 0.0 && frac != 0.25) throw "ERROR: rackings must be an integer or an integer + 0.25";
-			if (frac != 0.0 && frac != 0.5) throw "ERROR: rackings must be an integer or an integer + 0.5"; //new
+			if (frac != 0.0 && frac != 0.5) throw "ERROR: rackings must be an integer or an integer + 0.5";
 			racking = newRacking;
 		} else if (op === 'stitch') {
 			if (args.length !== 2) throw "ERROR: stitch takes two arguments.";
@@ -928,7 +927,8 @@ let passes = [];
 		} else if (op === 'x-presser-mode') {
 			console.warn("WARNING: x-presser-mode not supported on this machine.");
 		} else if (op === 'x-speed-number') {
-			console.warn("WARNING: x-speed-number not supported on this machine (though, perhaps, it should be)");
+			if (args.length !== 1) throw 'ERROR: x-speed-number takes one argument.';
+			speed = args[0];
 		} else if (op === 'x-stitch-number') {
 			if (args.length !== 1) throw 'ERROR: x-stitch-number takes one argument.';
 			stitch = args[0];
@@ -1195,7 +1195,8 @@ let passes = [];
 				let xpass = {
 					RACK:pass.racking,
 					type:'Tr-Rr',
-					speed:202,
+					//speed:202,
+					speed: pass.speed,
 					//roller:0,
 					roller: pass.roller,
 					direction:direction,
@@ -1349,7 +1350,8 @@ let passes = [];
 				RACK:rack,
 				type:pass.type.kcode,
 				stitch:pass.stitch,
-				speed:100,
+				//speed:100,
+				speed: pass.speed,
 				//roller:100,
 				roller: pass.roller,
 			};
