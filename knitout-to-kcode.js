@@ -542,6 +542,9 @@ let passes = [];
 	let xferStitch = 0; //machine-specific stitch number for transfers; 0 => default
 	let speed = 0; //machine-specific speed number
 	let pausePending = false; //optional stop before next instruction, please
+	
+	let roller = 100;
+	let addRoller = 0;
 
 	function slotNumber(bn) {
 		if (bn.isFront()) {
@@ -623,11 +626,12 @@ let passes = [];
 				else console.assert(false, "Passes with carriers have either LEFT or RIGHT direction.");
 
 				for (let slot in slotCs) {
-					let info = {
+					let info = { //TODO: decide whether should have 100 or 0 roller advance for soft misses
 						type:TYPE_SOFT_MISS,
 						slots:{},
 						racking:racking,
 						stitch:stitch,
+						roller: 0,
 						speed:speed,
 						carriers:slotCs[slot],
 						direction:d
@@ -721,6 +725,7 @@ let passes = [];
 						slots:{},
 						racking:racking,
 						stitch:stitch,
+						roller: 0,
 						speed:speed,
 						carriers:[carrier.name],
 						direction:DIRECTION_LEFT
@@ -743,10 +748,12 @@ let passes = [];
 						slots:{},
 						racking:racking,
 						stitch:stitch,
+						roller: 0,
 						speed:speed,
 						carriers:[carrier.name],
 						direction:DIRECTION_RIGHT
 					};
+					if (addRoller !== 0) (roller -= addRoller), (addRoller = 0); //remove //?
 					info.slots[slotString(carrier.last.needle)] = OP_SOFT_MISS;
 
 					merge(new Pass(info));
@@ -876,11 +883,13 @@ let passes = [];
 				slots:{},
 				racking:racking,
 				stitch:stitch,
+				roller: 0,
 				speed:speed,
 				carriers:cs,
 				direction:DIRECTION_LEFT,
 				gripper:GRIPPER_OUT,
 			};
+			if (addRoller !== 0) (roller -= addRoller), (addRoller = 0); //remove //?
 			info.slots[slotString(n)] = OP_SOFT_MISS;
 			//TODO: probably need to figure out some special logic for bringing a carrier out
 
@@ -921,8 +930,15 @@ let passes = [];
 		} else if (op === 'x-speed-number') {
 			console.warn("WARNING: x-speed-number not supported on this machine (though, perhaps, it should be)");
 		} else if (op === 'x-stitch-number') {
-			stitch = args[0]; //new
-			//console.warn("WARNING: x-stitch-number not supported on this machine (though, perhaps, it should be)");
+			if (args.length !== 1) throw 'ERROR: x-stitch-number takes one argument.';
+			stitch = args[0];
+		} else if (op === 'x-roller-advance') { //k-code specific extension
+			if (args.length !== 1) throw 'ERROR: x-roller-advance takes one argument.';
+			roller = Number(args[0]);
+		} else if (op === 'x-add-roller-advance') { //k-code specific extension
+			if (args.length !== 1) throw 'ERROR: x-add-roller-advance takes one argument.';
+			addRoller = Number(args[0]);
+			roller = roller + addRoller;
 		} else if (op === 'miss' || op === 'tuck' || op === 'knit') {
 			let d = args.shift();
 			let n = new BedNeedle(args.shift());
@@ -950,15 +966,17 @@ let passes = [];
 			else if (op === 'tuck') type = (n.isFront() ? TYPE_TUCK_x : TYPE_x_TUCK);
 			else if (op === 'miss') type = TYPE_SOFT_MISS; //NOTE: this might not be exactly right
 
-			let info = {
+			let info = { //default: knit,tuck,miss -- roller advance = 100 (unless otherwise specified with x-add-roller-advance)
 				type:type,
 				slots:{},
 				racking:racking,
 				stitch:stitch,
+				roller: roller,
 				speed:speed,
 				carriers:cs,
 				direction:d,
 			};
+			if (addRoller !== 0) (roller -= addRoller), (addRoller = 0);
 
 			if      (op === 'miss') info.slots[slotString(n)] = OP_SOFT_MISS;
 			else if (op === 'tuck') info.slots[slotString(n)] = (n.isFront() ? OP_TUCK_FRONT : OP_TUCK_BACK);
@@ -1004,15 +1022,18 @@ let passes = [];
 
 			kickOthers(n,cs); //both xfer and split need carriers out of the way
 
-			let info = {
+			let info = { //default: xfer roller advance = 0 (unless otherwise specified with x-add-roller-advance)
 				type:type,
 				slots:{},
 				racking:racking,
 				stitch:(cs.length === 0 ? xferStitch : stitch),
+				//roller: roller, //?
+				roller: 0 + addRoller,
 				speed:speed,
 				carriers:cs,
 				direction:d,
 			};
+			if (addRoller !== 0) (roller -= addRoller), (addRoller = 0);
 			info.slots[slotString(n)] = op;
 			handleIn(cs, info);
 
@@ -1175,7 +1196,8 @@ let passes = [];
 					RACK:pass.racking,
 					type:'Tr-Rr',
 					speed:202,
-					roller:0,
+					//roller:0,
+					roller: pass.roller,
 					direction:direction,
 					carriageLeft:Infinity, //will get updated
 					carriageRight:-Infinity, //will get updated
@@ -1206,20 +1228,20 @@ let passes = [];
 				for (let i = 0; i < 15; ++i) {
 					xpass.FRNT += '.';
 					xpass.REAR += '.';
-					xpass.STIF += '3'; //TODO: maybe add x-xfer-stitch-number extension? //new
-					xpass.STIR += '3'; //TODO //new
+					xpass.STIF += '3'; //TODO: maybe add x-xfer-stitch-number extension?
+					xpass.STIR += '3';
 				}
 				for (let n = 0; n <= 252; ++n) {
 					xpass.FRNT += '_';
 					xpass.REAR += '_';
-					xpass.STIF += '3'; //TODO //new
-					xpass.STIR += '3'; //TODO //new
+					xpass.STIF += '3';
+					xpass.STIR += '3';
 				}
 				for (let i = 0; i < 15; ++i) {
 					xpass.FRNT += '.';
 					xpass.REAR += '.';
-					xpass.STIF += '3'; //TODO //new
-					xpass.STIR += '3'; //TODO //new
+					xpass.STIF += '3';
+					xpass.STIR += '3';
 				}
 
 				function set(str, n) {
@@ -1326,9 +1348,10 @@ let passes = [];
 			let kpass = {
 				RACK:rack,
 				type:pass.type.kcode,
-				stitch:pass.stitch, //new
+				stitch:pass.stitch,
 				speed:100,
-				roller:100,
+				//roller:100,
+				roller: pass.roller,
 			};
 			if (pass.comment) kpass.comment = pass.comment;
 			if (pass.gripper === GRIPPER_OUT) {
@@ -1436,8 +1459,8 @@ let passes = [];
 			for (let i = 0; i < 15; ++i) {
 				kpass.FRNT += '.';
 				kpass.REAR += '.';
-				kpass.STIF += kpass.stitch; //new
-				kpass.STIR += kpass.stitch; //new
+				kpass.STIF += kpass.stitch;
+				kpass.STIR += kpass.stitch;
 			}
 			for (let n = 0; n <= 252; ++n) {
 				const f = frontNeedleToSlot(n);
@@ -1452,14 +1475,14 @@ let passes = [];
 				} else {
 					kpass.REAR += '_';
 				}
-				kpass.STIF += kpass.stitch; //new
-				kpass.STIR += kpass.stitch; //new
+				kpass.STIF += kpass.stitch;
+				kpass.STIR += kpass.stitch;
 			}
 			for (let i = 0; i < 15; ++i) {
 				kpass.FRNT += '.';
 				kpass.REAR += '.';
-				kpass.STIF += kpass.stitch; //new
-				kpass.STIR += kpass.stitch; //new
+				kpass.STIF += kpass.stitch;
+				kpass.STIR += kpass.stitch;
 			}
 			kcodePasses.push(kpass);
 			nextDirection = (nextDirection === DIRECTION_RIGHT ? DIRECTION_LEFT : DIRECTION_RIGHT);
