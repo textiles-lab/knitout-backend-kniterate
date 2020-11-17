@@ -753,7 +753,6 @@ let passes = [];
 						carriers:[carrier.name],
 						direction:DIRECTION_RIGHT
 					};
-					if (addRoller !== 0) (roller -= addRoller), (addRoller = 0); //remove //?
 					info.slots[slotString(carrier.last.needle)] = OP_SOFT_MISS;
 
 					merge(new Pass(info));
@@ -1502,6 +1501,7 @@ let passes = [];
 
 	out("HOME");
 	out("RACK:0");
+	out(`// ${kcFile}`); //add name of .kc file as comment in header, since it needs to be changed to 'command.kc' for the machine to read it (so can remember original name)
 
 	let lastRACK = 0.0;
 	kcodePasses.forEach(function(kpass){
