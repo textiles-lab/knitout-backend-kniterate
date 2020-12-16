@@ -99,6 +99,7 @@ const STITCH_NUMBERS = {
 };
 
 //parking locations for each carrier:
+//TODO: consider changing this
 const CARRIER_PARKING = [
 	-11.5,
 	-9.5,
@@ -425,6 +426,9 @@ Pass.prototype.append = function(pass) {
 //read from file:
 let headers = {};
 let passes = [];
+
+let carrierSpacing = 2;
+let carrierDistance = 2.5;
 
 (function knitoutToPasses() {
 	//load file, split on lines:
@@ -927,15 +931,28 @@ let passes = [];
 			console.warn("WARNING: x-presser-mode not supported on this machine.");
 		} else if (op === 'x-speed-number') {
 			if (args.length !== 1) throw 'ERROR: x-speed-number takes one argument.';
+			if (!/^[+-]?\d*\.?\d+$/.test(args[0])) throw 'ERROR: x-speed-number must be a number.';
 			speed = args[0];
 		} else if (op === 'x-stitch-number') {
 			if (args.length !== 1) throw 'ERROR: x-stitch-number takes one argument.';
+			if (!/^[+-]?\d*\.?\d+$/.test(args[0])) throw 'ERROR: x-stitch-number must be a number.';
 			stitch = args[0];
+		} else if (op === 'x-carrier-spacing') {
+			if (args.length !== 1) throw 'ERROR: x-carrier-spacing takes one argument.';
+			if (!/^[+-]?\d*\.?\d+$/.test(args[0])) throw 'ERROR: x-carrier-spacing must be a number.';
+			carrierSpacing = parseFloat(args.shift());
+		} else if (op === 'x-carrier-stopping-distance') {
+			if (args.length !== 1) throw 'ERROR: x-carrier-stopping-distance takes one argument.';
+			if (!/^[+-]?\d*\.?\d+$/.test(args[0])) throw 'ERROR: x-carrier-stopping-distance must be a number.';
+			carrierDistance = Math.floor(parseFloat(args.shift()));
+			carrierDistance += 0.5;
 		} else if (op === 'x-roller-advance') { //k-code specific extension
 			if (args.length !== 1) throw 'ERROR: x-roller-advance takes one argument.';
+			if (!/^[+-]?\d*\.?\d+$/.test(args[0])) throw 'ERROR: x-roller-advance must be a number.';
 			roller = Number(args[0]);
 		} else if (op === 'x-add-roller-advance') { //k-code specific extension
 			if (args.length !== 1) throw 'ERROR: x-add-roller-advance takes one argument.';
+			if (!/^[+-]?\d*\.?\d+$/.test(args[0])) throw 'ERROR: x-add-roller-advance must be a number.';
 			addRoller = Number(args[0]);
 			roller = roller + addRoller;
 		} else if (op === 'miss' || op === 'tuck' || op === 'knit') {
@@ -1136,8 +1153,8 @@ let passes = [];
 	};
 
 	//stopping distances past last-used needle location:
-	const CARRIER_STOP = 4.5;
-	const CARRIAGE_STOP = 4.5;
+	//const CARRIER_STOP = 4.5;
+	//const CARRIAGE_STOP = 4.5;
 
 	//yarn carriage state:
 	let nextDirection = DIRECTION_RIGHT;
@@ -1170,7 +1187,7 @@ let passes = [];
 			carriageLeft:leftStop,
 			carriageRight:rightStop,
 			type:'Kn-Kn',
-			speed:100, //TODO: might make this faster since no knitting is happening
+			speed:300, //TODO: might make this faster since no knitting is happening
 			roller:0,
 			comment:"automatically inserted carriage move"
 		};
@@ -1254,13 +1271,13 @@ let passes = [];
 						if (fromBed === 'f') {
 							xpass.FRNT = set(xpass.FRNT, 15 + n);
 							xpass.REAR = set(xpass.REAR, 15 + n - pass.racking);
-							xpass.carriageLeft = Math.min(xpass.carriageLeft, n - CARRIAGE_STOP);
-							xpass.carriageRight = Math.max(xpass.carriageRight, n + CARRIAGE_STOP);
+							xpass.carriageLeft = Math.min(xpass.carriageLeft, n - carrierDistance);
+							xpass.carriageRight = Math.max(xpass.carriageRight, n + carrierDistance);
 						} else { console.assert(fromBed === 'b', "only two options for fromBed");
 							xpass.FRNT = set(xpass.FRNT, 15 + n + pass.racking);
 							xpass.REAR = set(xpass.REAR, 15 + n);
-							xpass.carriageLeft = Math.min(xpass.carriageLeft, n - CARRIAGE_STOP);
-							xpass.carriageRight = Math.max(xpass.carriageRight, n + CARRIAGE_STOP);
+							xpass.carriageLeft = Math.min(xpass.carriageLeft, n - carrierDistance);
+							xpass.carriageRight = Math.max(xpass.carriageRight, n + carrierDistance);
 						}
 					}
 				}
@@ -1354,7 +1371,7 @@ let passes = [];
 				//roller:100,
 				roller: pass.roller,
 			};
-			if (pass.comment) kpass.comment = pass.comment;
+			if (pass.comment) kpass.comment = pass.comment; //TODO: add header for pause/alert on screen
 			if (pass.gripper === GRIPPER_OUT) {
 				kpass.comment = (kpass.comment || "") + "; carrier out";
 			}
@@ -1398,7 +1415,7 @@ let passes = [];
 				//set carrier stopping points:
 				if (kpass.direction === DIRECTION_LEFT) {
 					kpass.carrierRight = carrierAt[kpass.carrier];
-					kpass.carrierLeft = pass.minSlot + slotToNeedle - CARRIER_STOP;
+					kpass.carrierLeft = pass.minSlot + slotToNeedle - carrierDistance;
 					if (pass.gripper === GRIPPER_OUT) {
 						console.log("Carrier: " + JSON.stringify(pass.carriers[0]));
 						const parkingSpot = CARRIER_PARKING[parseInt(pass.carriers[0])-1];
@@ -1407,13 +1424,13 @@ let passes = [];
 						kpass.carrierLeft = parkingSpot;
 					} else {
 						//don't bump when parking carriers:
-						kpass.carrierLeft = bump(kpass.carrier, kpass.carrierLeft, -1.0); //bump over to avoid stacking
+						kpass.carrierLeft = bump(kpass.carrier, kpass.carrierLeft, -carrierSpacing); //bump over to avoid stacking
 					}
 					carrierAt[kpass.carrier] = kpass.carrierLeft;
 				} else { console.assert(kpass.direction === DIRECTION_RIGHT);
 					kpass.carrierLeft = carrierAt[kpass.carrier];
-					kpass.carrierRight = pass.maxSlot + slotToNeedle + CARRIER_STOP;
-					kpass.carrierRight = bump(kpass.carrier, kpass.carrierRight, 1.0); //bump over to avoid stacking
+					kpass.carrierRight = pass.maxSlot + slotToNeedle + carrierDistance;
+					kpass.carrierRight = bump(kpass.carrier, kpass.carrierRight, carrierSpacing); //bump over to avoid stacking
 					carrierAt[kpass.carrier] = kpass.carrierRight;
 				}
 			}
@@ -1431,21 +1448,21 @@ let passes = [];
 			//update carriage starting/stopping points for this pass:
 			if (kpass.direction === DIRECTION_LEFT) {
 				//starting point:
-				rightStop = Math.max(rightStop, pass.maxSlot + slotToNeedle + CARRIAGE_STOP);
+				rightStop = Math.max(rightStop, pass.maxSlot + slotToNeedle + carrierDistance);
 				if (pass.carriers.length !== 0) rightStop = Math.max(rightStop, kpass.carrierRight);
 				//shift previous pass's stop as well:
 				if (kprev) kprev.carriageRight = rightStop;
 				//stopping point:
-				leftStop = pass.minSlot + slotToNeedle - CARRIAGE_STOP;
+				leftStop = pass.minSlot + slotToNeedle - carrierDistance;
 				if (kpass.carrierLeft) leftStop = Math.min(leftStop, kpass.carrierLeft);
 			} else {console.assert(kpass.direction === DIRECTION_RIGHT);
 				//starting point:
-				leftStop = Math.min(leftStop, pass.minSlot + slotToNeedle - CARRIAGE_STOP);
+				leftStop = Math.min(leftStop, pass.minSlot + slotToNeedle - carrierDistance);
 				if (pass.carriers.length !== 0) leftStop = Math.min(leftStop, kpass.carrierLeft);
 				//shift previous pass's stop as well:
 				if (kprev) kprev.carriageLeft = leftStop;
 				//stopping point:
-				rightStop = pass.maxSlot + slotToNeedle + CARRIAGE_STOP;
+				rightStop = pass.maxSlot + slotToNeedle + carrierDistance;
 				if (kpass.carrierRight) rightStop = Math.max(rightStop, kpass.carrierRight);
 			}
 			kpass.carriageLeft = leftStop;
