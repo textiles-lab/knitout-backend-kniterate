@@ -15,7 +15,6 @@ tuck + f7 5
 tuck + f9 5
 miss + f10 5
 
-
 in 6
 
 tuck + f1 6
@@ -38,7 +37,6 @@ tuck - f6 6
 tuck - f4 6
 tuck - f2 6
 miss - f1 6
-
 
 knit + f1 5
 knit + f2 5
@@ -158,7 +156,6 @@ xfer f5 b5
 xfer f7 b7
 xfer f9 b9
 
-
 knit - f10 5
 knit - b9 5
 knit - f8 5
@@ -180,7 +177,6 @@ xfer b7 f7
 xfer f8 b8
 xfer b9 f9
 xfer f10 b10
-
 
 knit + f1 5
 knit + b2 5
