@@ -429,6 +429,8 @@ let passes = [];
 
 let carrierSpacing = 2;
 let carrierDistance = 2.5;
+let leftFloor = true, //new
+	rightFloor = true;
 
 (function knitoutToPasses() {
 	//load file, split on lines:
@@ -1403,7 +1405,23 @@ let carrierDistance = 2.5;
 							}
 						}
 						if (overlap) {
-							newStop += add;
+						////new
+							if (Math.abs(add) % 1 === 0.5) {
+								if (add < 0) {
+									leftFloor === true ? (bumpAdd = -Math.floor(-add)) : (bumpAdd = -Math.ceil(-add));
+									if (newStop + bumpAdd !== stop) {
+									leftFloor === true ? (leftFloor = false) : (leftFloor = true);
+									}
+								} else {
+								rightFloor === true ? (bumpAdd = Math.floor(add)) : (bumpAdd = Math.ceil(add));
+									if (newStop + bumpAdd !== stop) {
+										rightFloor === true ? (rightFloor = false) : (rightFloor = true);
+									}
+								}
+							}
+							newStop += bumpAdd;
+							//added option to have alternating carrier spacing (signified by whole number + 0.5 for x-carrier-spacing extension [i.e. x-carrier-spacing 1.5 alternates between having 1 and 2 spaces between carriers parked on a given side])
+						////
 						}
 					}
 					if (newStop !== stop) {
