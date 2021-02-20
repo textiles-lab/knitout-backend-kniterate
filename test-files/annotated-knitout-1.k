@@ -25,7 +25,7 @@ in 1
 ; if we don't include this operation, the backend will throw an error.
 
 x-add-roller-advance 50
-; ^ If we want to alter the roller advance for just one pass, we can alternatively use the extention 'x-add-roller-advance'. So, since the global 'x-roller-advance' value was set to 100, the following pass with have a roller advance of 150 (and would reset to 100 for the rest of the passes, until we write another roller advance extention). This value can also be negative (x-add-roller-advance -50 ==> 100 + (-50) , so roller advance = 50. Or even x-add-roller-advance -150 => 100 + (-150) , so roller advance = -50).
+; ^ If we want to alter the roller advance for just one pass, we can alternatively use the extention 'x-add-roller-advance'. So, since the global 'x-roller-advance' value was set to 100, the following pass will have a roller advance of 150 (and would reset to 100 for the rest of the passes, until we write another roller advance extention). This value can also be negative (x-add-roller-advance -50 ==> 100 + (-50) , so roller advance = 50. Or even x-add-roller-advance -150 => 100 + (-150) , so roller advance = -50).
 
 ; v The passes below serve to secure the yarns that will be used in the piece. On the kniterate machine, if the yarn held by a carrier is not already attached to the piece, the needles likely won't be able to grab a hold of it, resulting in dropped stitches. (more 'yarn in' passes = more likely that the yarn will be properly secured).
 knit + f1 1 ; < This is the first knit operation, which takes the following parameters (variables are wrapped in {}): knit {direction} {bed}{needle} {carrier}.
