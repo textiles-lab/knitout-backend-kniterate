@@ -1405,15 +1405,15 @@ let leftFloor = true, //new
 							}
 						}
 						if (overlap) {
-						////new
+						let bumpAdd = add;
 							if (Math.abs(add) % 1 === 0.5) {
 								if (add < 0) {
 									leftFloor === true ? (bumpAdd = -Math.floor(-add)) : (bumpAdd = -Math.ceil(-add));
 									if (newStop + bumpAdd !== stop) {
-									leftFloor === true ? (leftFloor = false) : (leftFloor = true);
+										leftFloor === true ? (leftFloor = false) : (leftFloor = true);
 									}
 								} else {
-								rightFloor === true ? (bumpAdd = Math.floor(add)) : (bumpAdd = Math.ceil(add));
+									rightFloor === true ? (bumpAdd = Math.floor(add)) : (bumpAdd = Math.ceil(add));
 									if (newStop + bumpAdd !== stop) {
 										rightFloor === true ? (rightFloor = false) : (rightFloor = true);
 									}
