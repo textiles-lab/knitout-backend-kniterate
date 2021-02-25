@@ -25,11 +25,7 @@ See the github documentation on [cloning a repository](https://docs.github.com/e
 
 ## <a name="browser"></a>Running in Browser
 
-Steps to use the program in a browser:
-
-<table>
-<tr><td><a href="#start">Getting Started</a></td><td><a href="#browser-use">Usage</a></td></tr>
-</table>
+Steps to use the program in a browser.
 
 <b><a name="start">Getting Started</b>  
   
@@ -43,11 +39,7 @@ To run the program in a browser, simply:
 
 ## <a name="local"></a>Running Locally
 
-Steps to use the program locally on your computer:
-
-<table>
-<tr><td><a href="#dependencies">Dependencies</a></td><td><a href="#installation">Installation</a></td><td><a href="#local-use">Usage</a></td></tr>
-</table>
+Steps to use the program locally on your computer.
 
 <b><a name="dependencies"></a>Dependencies</b>
 
