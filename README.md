@@ -57,11 +57,11 @@ These arguments are preceded by the engine used to run the program, node. (see [
 ```console
 node knitout-to-kcode.js <in.k> <out.kc>
 ```
-Example usage:
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Example usage:
 ```console
 node knitout-to-kcode.js test.k test.kc
 ```
-The output k-code file will be saved to the working directory.
+4. The output k-code file will be saved to the working directory.
 
 ## <a name="example-code"></a>Example Code
 
