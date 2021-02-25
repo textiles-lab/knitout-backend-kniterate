@@ -2,18 +2,8 @@
 ':' //; exec "$(command -v nodejs || command -v node)" "$0" "$@"
 "use strict";
 
-//parse command line
-if (process.argv.length != 4) {
-	console.error("Usage:\nknitout-to-kcode.js <in.knitout> <out.kc>");
-	process.exitCode = 1;
-	return;
-}
-let knitoutFile = process.argv[2];
-let kcFile = process.argv[3];
-
 //------------------------------------
 
-const fs = require('fs');
 
 //BedNeedle helps store needles:
 
@@ -423,39 +413,44 @@ Pass.prototype.append = function(pass) {
 	return true;
 };
 
-//read from file:
-let headers = {};
-let passes = [];
 
 let carrierSpacing = 2;
 let carrierDistance = 2.5;
 let leftFloor = true, //new
 	rightFloor = true;
 
-(function knitoutToPasses() {
+
+//convert knitout code (read as a utf8 string) to a sequence of unified passes:
+// returns {headers, passes}
+// (the knitoutFile parameter is included in error messages)
+function knitoutToPasses(knitout, knitoutFile) {
+	let headers = {};
+	let passes = [];
+
+
 	//load file, split on lines:
-	let lines = fs.readFileSync(knitoutFile, 'utf8').split('\n');
+	let lines = knitout.split('\n');
 	let lineIdx = 0;
 
 	//check for windows-style line endings:
-	let complainAboutLineEndings = false;
+	let complainAboutLineEndings = 0;
 	for (let i = 0; i < lines.length; ++i) {
 		if (lines[i].endsWith('\r')) {
 			lines[i] = lines[i].substr(0, lines[i].length-1);
-			complainAboutLineEndings = true;
+			complainAboutLineEndings = i+1;
 		}
 	}
-	if (complainAboutLineEndings) {
-		console.warn("WARNING: File contains some '\\r\\n'-style line endings, this is not specification-compliant.");
+	if (complainAboutLineEndings !== 0) {
+		console.warn(`${knitoutFile}:${complainAboutLineEndings} WARNING: File contains some '\\r\\n'-style line endings, this is not specification-compliant.`);
 	}
 
 	(function checkVersion(){
 		let m = lines[lineIdx].match(/^;!knitout-(\d+)$/);
 		if (!m) {
-			throw "File starts with '" + lines[0] + "', which is not a valid knitout magic string";
+			throw `${knitoutFile}:${lineIdx+1} File starts with '${lines[0]}', which is not a valid knitout magic string`;
 		}
 		if (parseInt(m[1]) > 2) {
-			console.warn("WARNING: File is version " + m[1] + ", but this code only knows about versions up to 2.");
+			console.warn(`${knitoutFile}:${lineIdx+1} WARNING: File is version ${m[1]}, but this code only knows about versions up to 2.`);
 		}
 		++lineIdx;
 	})();
@@ -477,7 +472,7 @@ let leftFloor = true, //new
 			let header = line.substr(2, idx-2);
 			let value = line.substr(idx+2);
 
-			if (header in headers) console.warn("WARNING: header '" + header + "' specified more than once. Will use last value.");
+			if (header in headers) console.warn(`${knitoutFile}:${lineIdx+1} WARNING: header '${header}' specified more than once. Will use last value.`);
 			if        (header === 'Carriers') {
 				headers.Carriers = value.split(/[ ]+/); //this is slightly generous -- the spec says "space-separated" not "whitespace-separated"
 			} else if (header === 'Machine') {
@@ -488,42 +483,42 @@ let leftFloor = true, //new
 				if (/^\d+\.?\d*$/.test(value) && parseFloat(value) > 0) {
 					headers.Gauge = parseFloat(value);
 				} else {
-					throw "ERROR: Gauge header's value ('" + value + "') should be a number greater than zero.";
+					throw `${knitoutFile}:${lineIdx+1} ERROR: Gauge header's value ('${value}') should be a number greater than zero.`;
 				}
 			} else if (header === 'Width') {
 				if (/^\d+$/.test(value) && parseInt(value) > 0) {
 					headers.Width = parseInt(value);
 				} else {
-					throw "ERROR: Width header's value should be a positive integer.";
+					throw `${knitoutFile}:${lineIdx+1} ERROR: Width header's value should be a positive integer.`;
 				}
 			} else if (header === 'Position') {
 				if (["Left", "Right", "Keep", "Center"].indexOf(value) !== -1) {
 					headers.Position = value;
 				} else {
-					throw "ERROR: Positon header's value should be 'Left', 'Right', 'Keep', or 'Center'.";
+					throw `${knitoutFile}:${lineIdx+1} ERROR: Positon header's value should be 'Left', 'Right', 'Keep', or 'Center'.`;
 				}
 			} else {
-				console.warn("WARNING: File contains unknown comment header '" + header + "'.");
+				console.warn(`${knitoutFile}:${lineIdx+1} WARNING: Unknown comment header '${header}'.`);
 			}
 		} //for (lines)
 
 		//'Carriers:' header is required
 		if (!('Carriers' in headers)) {
-			throw "ERROR: 'Carriers:' header is required.";
+			throw `${knitoutFile}:${lineIdx+1} ERROR: 'Carriers:' header is required.`;
 		}
 
 		//TODO: revisit this, allow any carriers header?
 		//This code requires Carriers to be 1 .. 10 in order:
 		if (headers.Carriers.join(' ') !== '1 2 3 4 5 6') {
-			throw "ERROR: 'Carriers:' header must be '1 2 3 4 5 6'.";
+			throw `${knitoutFile}:${lineIdx+1} ERROR: 'Carriers:' header must be '1 2 3 4 5 6'.`;
 		}
 
 		//Set default 'Width' if not specified + report current value:
 		if (!('Width' in headers)) {
 			headers.Width = 252;
-			console.log("Width header not specified. Assuming beds are " + headers.Width + " needles wide.");
+			console.log(`Width header not specified. Assuming beds are ${headers.Width} needles wide.`);
 		} else {
-			console.log("Width header indicates beds are " + headers.Width + " needles wide.");
+			console.log(`Width header indicates beds are ${headers.Width} needles wide.`);
 		}
 
 		//Set default 'Position' if not specified + report current value:
@@ -775,14 +770,14 @@ let leftFloor = true, //new
 		if (cs.length === 0) return;
 		let inInfo = null;
 		cs.forEach(function(c){
-			if (!(c in carriers)) throw "ERROR: using a carrier (" + c + ") that isn't active.";
+			if (!(c in carriers)) throw `${knitoutFile}:${lineIdx+1} ERROR: using a carrier (${c}) that isn't active.`;
 			if (carriers[c].in) {
 				inInfo = carriers[c].in;
 				carriers[c].in = null;
 			}
 		});
 		if (inInfo) {
-			if (JSON.stringify(inInfo.cs) !== JSON.stringify(cs)) throw "ERROR: first use of carriers " + JSON.stringify(cs) + " doesn't match in info " + JSON.stringify(inInfo);
+			if (JSON.stringify(inInfo.cs) !== JSON.stringify(cs)) throw `${knitoutFile}:${lineIdx+1} ERROR: first use of carriers ${JSON.stringify(cs)} doesn't match in info ${JSON.stringify(inInfo)}`;
 			if (inInfo.op === 'in') {
 				info.gripper = GRIPPER_IN;
 			} else {
@@ -839,19 +834,19 @@ let leftFloor = true, //new
 
 		//Handle operations:
 		if (op === 'inhook') {
-			throw "ERROR: cannot 'inhook' on this machine.";
+			throw `${knitoutFile}:${lineIdx+1} ERROR: cannot 'inhook' on this machine.`;
 		} else if (op === 'in') {
 			let cs = args;
-			if (cs.length === 0) throw "ERROR: Can't bring in no carriers";
+			if (cs.length === 0) throw `${knitoutFile}:${lineIdx+1} ERROR: Can't bring in no carriers`;
 
 			cs.forEach(function(c){
 				if (headers.Carriers.indexOf(c) === -1) {
-					throw "ERROR: Can't use carrier '" + c + "' which isn't named in the Carriers comment header.";
+					throw `${knitoutFile}:${lineIdx+1} ERROR: Can't use carrier '${c}' which isn't named in the Carriers comment header.`;
 				}
 			});
 
 			cs.forEach(function(c){
-				if (c in carriers) throw "ERROR: Can't bring in carrier '" + c + "' -- it is already active.";
+				if (c in carriers) throw `${knitoutFile}:${lineIdx+1} ERROR: Can't bring in carrier '${c}' -- it is already active.`;
 			});
 
 			let inInfo = {op:op, cs:cs.slice()};
@@ -862,15 +857,15 @@ let leftFloor = true, //new
 				carriers[c] = carrier;
 			});
 		} else if (op === 'releasehook') {
-			throw "ERROR: cannot 'releasehook' on this machine.";
+			throw `${knitoutFile}:${lineIdx+1} ERROR: cannot 'releasehook' on this machine.`;
 		} else if (op === 'outhook') {
-			throw "ERROR: cannot 'outhook' on this machine.";
+			throw `${knitoutFile}:${lineIdx+1} ERROR: cannot 'outhook' on this machine.`;
 		} else if (op === 'out') {
 			let cs = args;
 			
 			cs.forEach(function(c){
-				if (!(c in carriers)) throw "ERROR: Can't bring out carrier '" + c + "' -- it isn't yet active.";
-				if (!carriers[c].last) throw "ERROR: Can't bring out carrier '" + c + "' -- it hasn't yet stitched.";
+				if (!(c in carriers)) throw `${knitoutFile}:${lineIdx+1} ERROR: Can't bring out carrier '${c}' -- it isn't yet active.`;
+				if (!carriers[c].last) throw `${knitoutFile}:${lineIdx+1} ERROR: Can't bring out carrier '${c}' -- it hasn't yet stitched.`;
 			});
 
 			//make a pass with (at least) a single *leftward* miss from which to take the carrier out:
@@ -905,8 +900,8 @@ let leftFloor = true, //new
 				delete carriers[c];
 			});
 		} else if (op === 'rack') {
-			if (args.length !== 1) throw "ERROR: racking takes one argument.";
-			if (!/^[+-]?\d*\.?\d+$/.test(args[0])) throw "ERROR: racking must be a number.";
+			if (args.length !== 1) throw `${knitoutFile}:${lineIdx+1} ERROR: racking takes one argument.`;
+			if (!/^[+-]?\d*\.?\d+$/.test(args[0])) throw `${knitoutFile}:${lineIdx+1} ERROR: racking must be a number.`;
 			let newRacking = parseFloat(args.shift());
 			let frac = newRacking - Math.floor(newRacking);
 			let quarter_frac = (frac == 0.25);
@@ -914,11 +909,11 @@ let leftFloor = true, //new
 				newRacking += 0.25;
 				frac = newRacking - Math.floor(newRacking);
 			}
-			if (frac != 0.0 && frac != 0.5) throw "ERROR: rackings must be an integer or an integer + 0.5";
+			if (frac != 0.0 && frac != 0.5) throw `${knitoutFile}:${lineIdx+1} ERROR: rackings must be an integer or an integer + 0.5`;
 			racking = newRacking;
 		} else if (op === 'stitch') {
-			if (args.length !== 2) throw "ERROR: stitch takes two arguments.";
-			if (!/^[+-]?\d+$/.test(args[0]) || !/^[+-]?\d+$/.test(args[1])) throw "ERROR: stitch arguments must be integers.";
+			if (args.length !== 2) throw `${knitoutFile}:${lineIdx+1} ERROR: stitch takes two arguments.`;
+			if (!/^[+-]?\d+$/.test(args[0]) || !/^[+-]?\d+$/.test(args[1])) throw `${knitoutFile}:${lineIdx+1} ERROR: stitch arguments must be integers.`;
 			let newLeading = parseInt(args.shift());
 			let newStitch = parseInt(args.shift());
 
@@ -926,36 +921,36 @@ let leftFloor = true, //new
 			if (!(key in STITCH_NUMBERS)) {
 				console.log("Stitch number table:");
 				console.log(STITCH_NUMBERS);
-				throw "ERROR: leading " + newLeading + " with stitch " + newStitch + " doesn't appear in stitch number table.";
+				throw `${knitoutFile}:${lineIdx+1} ERROR: leading " + newLeading + " with stitch " + newStitch + " doesn't appear in stitch number table.`;
 			}
 			stitch = STITCH_NUMBERS[key];
 		} else if (op === 'x-presser-mode') {
-			console.warn("WARNING: x-presser-mode not supported on this machine.");
+			console.warn(`${knitoutFile}:${lineIdx+1} WARNING: x-presser-mode not supported on this machine.`);
 		} else if (op === 'x-speed-number') {
-			if (args.length !== 1) throw 'ERROR: x-speed-number takes one argument.';
-			if (!/^[+-]?\d*\.?\d+$/.test(args[0])) throw 'ERROR: x-speed-number must be a number.';
+			if (args.length !== 1) throw `${knitoutFile}:${lineIdx+1} ERROR: x-speed-number takes one argument.`;
+			if (!/^[+-]?\d*\.?\d+$/.test(args[0])) throw `${knitoutFile}:${lineIdx+1} ERROR: x-speed-number must be a number.`;
 			speed = args[0];
 		} else if (op === 'x-stitch-number') {
-			if (args.length !== 1) throw 'ERROR: x-stitch-number takes one argument.';
-			if (!/^[+-]?\d*\.?\d+$/.test(args[0])) throw 'ERROR: x-stitch-number must be a number.';
+			if (args.length !== 1) throw `${knitoutFile}:${lineIdx+1} ERROR: x-stitch-number takes one argument.`;
+			if (!/^[+-]?\d*\.?\d+$/.test(args[0])) throw `${knitoutFile}:${lineIdx+1} ERROR: x-stitch-number must be a number.`;
 			stitch = args[0];
 		} else if (op === 'x-carrier-spacing') {
-			if (args.length !== 1) throw 'ERROR: x-carrier-spacing takes one argument.';
-			if (!/^[+-]?\d*\.?\d+$/.test(args[0])) throw 'ERROR: x-carrier-spacing must be a number.';
+			if (args.length !== 1) throw `${knitoutFile}:${lineIdx+1} ERROR: x-carrier-spacing takes one argument.`;
+			if (!/^[+-]?\d*\.?\d+$/.test(args[0])) throw `${knitoutFile}:${lineIdx+1} ERROR: x-carrier-spacing must be a number.`;
 			carrierSpacing = parseFloat(args.shift());
 		} else if (op === 'x-carrier-stopping-distance') {
-			if (args.length !== 1) throw 'ERROR: x-carrier-stopping-distance takes one argument.';
-			if (!/^[+-]?\d*\.?\d+$/.test(args[0])) throw 'ERROR: x-carrier-stopping-distance must be a number.';
+			if (args.length !== 1) throw `${knitoutFile}:${lineIdx+1} ERROR: x-carrier-stopping-distance takes one argument.`;
+			if (!/^[+-]?\d*\.?\d+$/.test(args[0])) throw `${knitoutFile}:${lineIdx+1} ERROR: x-carrier-stopping-distance must be a number.`;
 			carrierDistance = Math.floor(parseFloat(args.shift()));
 			carrierDistance += 0.5;
 		} else if (op === 'x-roller-advance') { //k-code specific extension
-			if (args.length !== 1) throw 'ERROR: x-roller-advance takes one argument.';
-			if (!/^[+-]?\d*\.?\d+$/.test(args[0])) throw 'ERROR: x-roller-advance must be a number.';
-			roller = Number(args[0]);
+			if (args.length !== 1) throw `${knitoutFile}:${lineIdx+1} ERROR: x-roller-advance takes one argument.`;
+			if (!/^[+-]?\d*\.?\d+$/.test(args[0])) throw `${knitoutFile}:${lineIdx+1} ERROR: x-roller-advance must be a number.`;
+			roller = parseFloat(args[0]);
 		} else if (op === 'x-add-roller-advance') { //k-code specific extension
-			if (args.length !== 1) throw 'ERROR: x-add-roller-advance takes one argument.';
-			if (!/^[+-]?\d*\.?\d+$/.test(args[0])) throw 'ERROR: x-add-roller-advance must be a number.';
-			addRoller = Number(args[0]);
+			if (args.length !== 1) throw `${knitoutFile}:${lineIdx+1} ERROR: x-add-roller-advance takes one argument.`;
+			if (!/^[+-]?\d*\.?\d+$/.test(args[0])) throw `${knitoutFile}:${lineIdx+1} ERROR: x-add-roller-advance must be a number.`;
+			addRoller = parseFloat(args[0]);
 			roller = roller + addRoller;
 		} else if (op === 'miss' || op === 'tuck' || op === 'knit') {
 			let d = args.shift();
@@ -963,12 +958,12 @@ let leftFloor = true, //new
 			let cs = args;
 
 			if (expectNoCarriers && cs.length !== 0) {
-				throw "ERROR: cannot amiss/drop with carriers (use tuck/knit).";
+				throw `${knitoutFile}:${lineIdx+1} ERROR: cannot amiss/drop with carriers (use tuck/knit).`;
 			}
 
 			if (cs.length === 0) {
 				if (op === 'miss') {
-					throw "ERROR: it makes no sense to miss with no yarns.";
+					throw `${knitoutFile}:${lineIdx+1} ERROR: it makes no sense to miss with no yarns.`;
 				} else {
 					d = DIRECTION_NONE; //a-miss and drop are directionless
 				}
@@ -1067,13 +1062,13 @@ let leftFloor = true, //new
 			setLast(cs, d, n);
 		} else if (op === 'pause') {
 			if (pausePending) {
-				console.warn("WARNING: redundant pause instruction.");
+				console.warn(`${knitoutFile}:${lineIdx+1} WARNING: redundant pause instruction.`);
 			}
 			pausePending = true;
 		} else if (op.match(/^x-/)) {
-			console.warn("WARNING: unsupported extension operation '" + op + "'.");
+			console.warn(`${knitoutFile}:${lineIdx+1} WARNING: unsupported extension operation '${op}'.`);
 		} else {
-			throw "ERROR: unsupported operation '" + op + "'.";
+			throw `${knitoutFile}:${lineIdx+1} ERROR: unsupported operation '${op}'.`;
 		}
 
 
@@ -1083,17 +1078,21 @@ let leftFloor = true, //new
 	{
 	
 		if (!(Object.entries(carriers).length === 0)){
-			throw "ERROR: All carriers need to be taken out, out missing on carriers: " + Object.keys(carriers) + ".";
+			throw `${knitoutFile}:${lineIdx+1} ERROR: All carriers need to be taken out, out missing on carriers: ${Object.keys(carriers)}.`;
 		}
 	}
 
 	//parse knitout to operations
 	//for each operation, translate to color index
 	//call pass.add(...), if fails, make a new pass and call pass.add(...)
-})();
+
+	return { headers, passes };
+}
 
 
-(function passesToKCode() {
+//convert passes to kcode, reading values from headers:
+// returns kcode as a string
+function passesToKCode(headers, passes, kcFile) {
 
 	//compute minimum and maximum slots both for each pass and for the program as a whole:
 	let minSlot = Infinity;
@@ -1435,7 +1434,7 @@ let leftFloor = true, //new
 					kpass.carrierRight = carrierAt[kpass.carrier];
 					kpass.carrierLeft = pass.minSlot + slotToNeedle - carrierDistance;
 					if (pass.gripper === GRIPPER_OUT) {
-						console.log("Carrier: " + JSON.stringify(pass.carriers[0]));
+						//console.log("Carrier: " + JSON.stringify(pass.carriers[0]));
 						const parkingSpot = CARRIER_PARKING[parseInt(pass.carriers[0])-1];
 						console.log("Will park " + pass.carriers[0] + " at " + kpass.carrierLeft);
 						console.assert(parkingSpot <= kpass.carrierLeft, "Parking spot should be left of any slots.");
@@ -1596,6 +1595,30 @@ let leftFloor = true, //new
 		out(op);
 	});
 
-	fs.writeFileSync(kcFile, kcode.join("\n") + "\n");
+	return kcode;
+}
 
-})();
+
+//-------------------------------
+//driver code (if run from command line):
+
+if (typeof(window) === 'undefined') {
+	//parse command line
+	if (process.argv.length != 4) {
+		console.error("Usage:\nknitout-to-kcode.js <in.knitout> <out.kc>");
+		process.exitCode = 1;
+	} else {
+		let knitoutFile = process.argv[2];
+		let kcFile = process.argv[3];
+		const fs = require('fs');
+		console.log("Reading knitout from '" + knitoutFile + "'.");
+		const knitout = fs.readFileSync(knitoutFile, 'utf8');
+		const {headers, passes} = knitoutToPasses(knitout, knitoutFile);
+		const kcode = passesToKCode(headers, passes, kcFile);
+		console.log("Writing KCode to '" + kcFile + "'.");
+		fs.writeFileSync(kcFile, kcode);
+	}
+}
+
+
+//fs.writeFileSync(kcFile, kcode.join("\n") + "\n");
