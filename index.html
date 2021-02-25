@@ -1,0 +1,113 @@
+<html>
+<head>
+<meta charset="utf-8">
+<title>Knitout for Kniterate</title>
+</head>
+<body>
+<h1>Knitout to KCode</h1>
+<p>
+This page will convert <a href="">knitout</a> -- a low-level knitting machine output language -- in to <a href="">kcode</a>, the format used by <a href="">Kniterate</a> knitting machines.
+</p>
+<p>
+<a href="https://github.com/textiles-lab/knitout-backend-kniterate/issues">report bugs</a>
+<a href="https://github.com/textiles-lab/knitout-backend-kniterate/">get source code</a> (includes a command-line version)
+</p>
+
+<h2>Knitout (input)</h2>
+<input type="file" id="infile"><label for="infile">Select a knitout (.k / .knitout) file or drag one into the window.</label>
+
+<h2>Messages</h2>
+<div id="messages">
+(none yet)
+</div>
+
+<h2>KCode (output)</h2>
+<a href="">download</a>
+<textarea id="output">
+(no output yet)
+</textarea>
+
+<script src="knitout-to-kcode.js"></script>
+<script>
+function processKnitout(filename, text) {
+	try {
+		let kcFile;
+		let i = filename.lastIndexOf('.');
+		if (i === -1) kcFile = filename + '.kc';
+		else kcFile = filename.substr(0,i) + '.kc';
+		const {headers, passes} = knitoutToPasses(text, filename);
+		const kcode = passesToKCode(headers, passes, kcFile);
+	} catch (e) {
+		console.error(e);
+	}
+
+}
+
+//file loading modified from knitout-live-visualizer:
+function readFile(file) {
+	console.log("Attempting to read file: '" + file.name + "'");
+
+	//generate new data:
+	var reader = new FileReader();
+	reader.onload = function(){
+		//document.getElementById('fileName').innerText = file.name;
+		console.log("read " + file.name);
+		let text = reader.result;
+		let oldText = text;
+		//line ending conversion:
+		text = text.replace(/\r\n/g,"\n");
+		if (oldText != text) {
+			console.warn("Converted dos-style line endings to unix-style.")
+		}
+		processKnitout(file.name, reader.result);
+	};
+	console.log("reading " + file.name);
+	reader.readAsText(file);
+
+}
+
+const infile = document.getElementById('infile');
+infile.addEventListener('change', (evt) => {
+	readFile(infile.files[0]);
+	infile.value = "";
+	evt.preventDefault();
+	return false;
+});
+
+/*
+var dropTarget = document.getElementById("dropTarget");
+//dragging into the window also loads files:
+dropTarget.addEventListener('dragover', function(evt){
+	dropTarget.classList.add("active");
+	evt.preventDefault();
+	return false;
+});
+dropTarget.addEventListener('dragleave', function(evt){
+	dropTarget.classList.remove("active");
+	evt.preventDefault();
+	return false;
+});
+dropTarget.addEventListener('drop', function(evt){
+	dropTarget.classList.remove("active");
+	try {
+		readFile(evt.dataTransfer.files[0]);
+	} catch (e) {
+		console.log(e);
+	}
+	evt.preventDefault();
+	return false;
+});
+
+//dragging into the window shows the target:
+document.addEventListener('dragover', function(evt){
+	dropTarget.classList.add("active");
+	evt.preventDefault();
+	return false;
+});
+*/
+
+
+
+</script>
+</body>
+</html>

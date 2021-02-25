@@ -4,7 +4,7 @@
 ;;Carriers: 1 2 3 4 5 6
 ;;Position: Keep
 
-x-stitch-number 85
+x-stitch-number 5
 
 in 5
 
@@ -14,7 +14,6 @@ tuck + f5 5
 tuck + f7 5
 tuck + f9 5
 miss + f10 5
-
 
 in 6
 
@@ -39,7 +38,6 @@ tuck - f4 6
 tuck - f2 6
 miss - f1 6
 
-
 knit + f1 5
 knit + f2 5
 knit + f3 5
@@ -55,7 +53,28 @@ out 6
 
 ;some full-gauge rib for a moment:
 
-rack 0.5
+rack 0.25
+;^ equivalent to `rack 0.5` - using 0.25 so that the knitout live visualizer interprets it correctly (Shima Seiki machines use 0.25 for half-rack)
+
+knit - f10 5
+knit - b9 5
+knit - f9 5
+knit - b8 5
+knit - f8 5
+knit - b7 5
+knit - f7 5
+knit - b6 5
+knit - f6 5
+knit - b5 5
+knit - f5 5
+knit - b4 5
+knit - f4 5
+knit - b3 5
+knit - f3 5
+knit - b2 5
+knit - f2 5
+knit - b1 5
+knit - f1 5
 
 knit + f1 5
 knit + b1 5
@@ -127,7 +146,7 @@ drop b7
 drop b8
 drop b9
 
-rack 0.0
+rack 0
 
 ;now some seed-like stitching:
 
@@ -136,7 +155,6 @@ xfer f3 b3
 xfer f5 b5
 xfer f7 b7
 xfer f9 b9
-
 
 knit - f10 5
 knit - b9 5
@@ -159,7 +177,6 @@ xfer b7 f7
 xfer f8 b8
 xfer b9 f9
 xfer f10 b10
-
 
 knit + f1 5
 knit + b2 5
