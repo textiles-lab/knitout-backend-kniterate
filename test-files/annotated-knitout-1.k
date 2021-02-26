@@ -5,7 +5,7 @@
 ;;Position: Keep
 
 ; ^ In the header section above, each line is preceded by two semicolins (except for the knitout version, which uses ';!')--not to be confused with comments, which are preceded by a single semi-colin.
-, The header section contains some required and some optional info. as follows:
+; The header section contains some required and some optional info. as follows:
 ; 1: the version of knitout being used [required] - (current version is knitout-2)
 ; 2: the machine [optional] - (which will always be 'Kniterate', if this backend is in use.)
 ; 3: the gauge of the machine [optional] - (once again, always 7 for kniterate.)
@@ -131,6 +131,8 @@ drop b9
 drop b10
 
 ; v Next is the draw thread, which can be pulled out to drop the waste yarn from the main section once the piece is finished.
+in 3
+
 knit + f1 3
 knit + f2 3
 knit + f3 3
@@ -188,6 +190,7 @@ knit + b10 2
 
 out 1
 out 2
+out 3
 ; ^ The 'out' operation instructs the carriage to pick up a carrier and park it on the left side, past the needle bed (out of the way).
 ; since carrier 1 ended in the negative direction (going right to left), so it avoids the working needles when it is brought out.
-; on the other hand, carrier 2 ended in the positive direction, meaning that bringing it out will pass an unsecured strand of yarn over the working needles. This won't necessarily cause dropped stitches (since no needles are being selected), but if we were to continue knitting, the next pass would knit this unsecured strand along with the yarn from the working carrier, which we might not want. To avoid this, we might add a 'miss' operation for a few needles past the right-most working needle after the last pass for carriers that end in the positive direction. Accordingly, the carrier is out of the way, and we can bring it out at the very end of the piece.
+; on the other hand, carriers 2 and 3 ended in the positive direction, meaning that bringing them out will pass an unsecured strand of yarn over the working needles. This won't necessarily cause dropped stitches (since no needles are being selected), but if we were to continue knitting, the next pass would knit these unsecured strands along with the yarn from the working carrier, which we might not want. To avoid this, we might add a 'miss' operation for a few needles past the right-most working needle after the last pass for carriers that end in the positive direction. As a result, the carrier is out of the way, and we can bring it out at the very end of the piece without worrying about issues.
