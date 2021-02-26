@@ -24,12 +24,40 @@ This page will convert <a href="https://github.com/textiles-lab/knitout">knitout
 
 		<h2>KCode (output)</h2>
 		<a id="kcode-download" href="" download="">download</a><br><br>
-		<textarea id="output">
+		<div id="top-scroll">
+			<div id="pseudo"></div>
+			</div>
+		<textarea id="output" style="width:fit-content;">
 (no output yet)
 </textarea>
 
 		<script src="knitout-to-kcode.js"></script>
 		<script>
+			//automatically add console logs to messages innerHTML
+			(function () {
+				let log = console.log;
+				const m = document.getElementById('messages');
+				console.log = function () {
+					for (var i = 0; i < arguments.length; ++i) {
+						if (typeof arguments[i] == 'object') {
+							m.innerHTML += (JSON && JSON.stringify ? JSON.stringify(arguments[i], undefined, 2) : arguments[i]) + '<br />';
+						} else {
+							m.innerHTML += arguments[i] + '<br />';
+						}
+					}
+					log(...arguments); //also log to console
+					}
+			})();
+			//link pseudo-top scroll bar to output for scrolling through horizontal overflow
+			const topScroll = document.getElementById('top-scroll');
+			const output = document.getElementById('output');
+			topScroll.onscroll = function () {
+					output.scrollLeft = topScroll.scrollLeft;
+				}
+				output.onscroll = function () {
+					topScroll.scrollLeft = output.scrollLeft;
+				}
+
 			function processKnitout(filename, text) {
 				try {
 					let kcFile;
@@ -38,8 +66,20 @@ This page will convert <a href="https://github.com/textiles-lab/knitout">knitout
 					else kcFile = filename.substr(0,i) + '.kc';
 					const {headers, passes} = knitoutToPasses(text, filename);
 					const kcode = passesToKCode(headers, passes, kcFile);
-					//write file to blob and create download 
-					const blob = new Blob([kcode.join('\n')], { type: "text/kc" });
+					//join array with line breaks; write file to blob
+					const kcodeStr = kcode.join('\n');
+					const blob = new Blob([kcodeStr], { type: "text/kc" });
+					output.innerHTML = kcodeStr;
+					//add top scroll/fit content nicely
+					output.style.width = '98%',
+						output.style.whiteSpace = 'nowrap';
+					topScroll.style.width = '98%',
+						topScroll.style.overflowX = 'scroll',
+						topScroll.style.overflowY = 'hidden';
+					(output.scrollHeight >= 700) ? output.style.height = '700px' : ((output.style.height = 'auto'), (output.style.height = output.scrollHeight + 'px'), (output.style.overflowY = 'hidden'));
+					document.getElementById('pseudo').style.width = 1.2 * output.scrollWidth;
+					document.getElementById('pseudo').style.height = '20px';
+					//create output file & add properties to download button
 					const url = URL.createObjectURL(blob);
 					const a = document.getElementById('kcode-download');
 					a.href = url;
@@ -52,7 +92,9 @@ This page will convert <a href="https://github.com/textiles-lab/knitout">knitout
 
 			//file loading modified from knitout-live-visualizer:
 			function readFile(file) {
-				console.log("Attempting to read file: '" + file.name + "'");
+				const m = document.getElementById('messages');
+				m.innerHTML = ''; //clear messages '(none yet)' placeholder
+				console.log("Attempting to read file: '" + file.name + "'.");
 
 				//generate new data:
 				var reader = new FileReader();
@@ -64,11 +106,11 @@ This page will convert <a href="https://github.com/textiles-lab/knitout">knitout
 					//line ending conversion:
 					text = text.replace(/\r\n/g,"\n");
 					if (oldText != text) {
-						console.warn("Converted dos-style line endings to unix-style.")
+						console.warn("Converted dos-style line endings to unix-style.");
 					}
 					processKnitout(file.name, reader.result);
 				};
-				console.log("reading " + file.name);
+				console.log("reading " + file.name + ".");
 				reader.readAsText(file);
 
 			}
@@ -76,7 +118,7 @@ This page will convert <a href="https://github.com/textiles-lab/knitout">knitout
 			const infile = document.getElementById('infile');
 			infile.addEventListener('change', (evt) => {
 				readFile(infile.files[0]);
-				infile.value = "";
+				infile.value = " "; //add space so default 'no file chosen' goes away
 				evt.preventDefault();
 				return false;
 			});
