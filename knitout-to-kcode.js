@@ -1065,6 +1065,8 @@ function knitoutToPasses(knitout, knitoutFile) {
 				console.warn(`${knitoutFile}:${lineIdx+1} WARNING: redundant pause instruction.`);
 			}
 			pausePending = true;
+		} else if (op === 'x-vis-color') {
+			//do nothing -- visualization color doesn't matter to kcode creation!
 		} else if (op.match(/^x-/)) {
 			console.warn(`${knitoutFile}:${lineIdx+1} WARNING: unsupported extension operation '${op}'.`);
 		} else {
