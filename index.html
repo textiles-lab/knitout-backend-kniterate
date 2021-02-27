@@ -2,34 +2,43 @@
 	<head>
 		<meta charset="utf-8">
 		<title>Knitout for Kniterate</title>
+		<link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400&display=swap" rel="stylesheet">
+		<link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@300&display=swap" rel="stylesheet">
+		<link href="style.css" rel="stylesheet">
 	</head>
 	<body>
 		<h1>Knitout to KCode</h1>
 		<p>
-This page will convert <a href="https://github.com/textiles-lab/knitout">knitout</a> -- a low-level knitting machine output language -- in to <a href="">kcode</a>, the format used by <a href="">Kniterate</a> knitting machines.
+This page will convert <a href="https://github.com/textiles-lab/knitout">knitout</a> -- a low-level knitting machine output language -- into <a class="broken" href="">kcode</a>, the format used by <a href="https://kniterate.com/">Kniterate</a> knitting machines.
 		</p>
 		<p>
-<a href="https://github.com/textiles-lab/knitout-backend-kniterate/issues">report bugs</a><br>
-<a href="https://github.com/textiles-lab/knitout-backend-kniterate/">get source code</a> (includes a command-line version)
+<li>&ensp;<a href="https://github.com/textiles-lab/knitout-backend-kniterate/issues">report bugs</a></li><br>
+<li>&ensp;<a href="https://github.com/textiles-lab/knitout-backend-kniterate/">get source code</a> (includes a command-line version)</li>
 		</p>
-
-		<h2>Knitout (input)</h2>
-		<label for="infile">Select a knitout (.k / .knitout) file or drag one into the window.</label><br>
+		<br>
+<div id="wrapper">
+	<div id="column1">
+		<h2>Knitout <span style="font-size:16px">(input)</span></h2>
+Select a knitout (.k / .knitout) file or drag one into the window.<br>
+		<label for="infile" class="button">Choose File</label>
 		<input type="file" id="infile">
-
-		<h2>Messages</h2>
-		<div id="messages">
-			(none yet)
-		</div>
-
-		<h2>KCode (output)</h2>
-		<a id="kcode-download" href="" download="">download</a><br><br>
+				<h2>Messages</h2>
+				<ul id="messages" style="background-color:#282a36; padding-right:1em">
+					<br>
+					<li>(none yet)</li><br>
+				</ul>
+	</div>
+	<div id="column2">
+		<h2>KCode <span style="font-size:16px">(output)</span></h2>
+		<a id="kcode-download" title="No file chosen" class="button inactive" href="" download="">Download</a><br><br>
 		<div id="top-scroll">
-			<div id="pseudo"></div>
-			</div>
-		<textarea id="output" style="width:fit-content;">
+			<div id="top"></div>
+		</div>
+		<textarea id="output" style="width:fit-content">
 (no output yet)
-</textarea>
+		</textarea>
+	</div>	
+</div>
 
 		<script src="knitout-to-kcode.js"></script>
 		<script>
@@ -40,9 +49,9 @@ This page will convert <a href="https://github.com/textiles-lab/knitout">knitout
 				console.log = function () {
 					for (var i = 0; i < arguments.length; ++i) {
 						if (typeof arguments[i] == 'object') {
-							m.innerHTML += (JSON && JSON.stringify ? JSON.stringify(arguments[i], undefined, 2) : arguments[i]) + '<br />';
+							m.innerHTML += '<li>' + (JSON && JSON.stringify ? JSON.stringify(arguments[i], undefined, 2) : arguments[i]) + '</li><br />';
 						} else {
-							m.innerHTML += arguments[i] + '<br />';
+							m.innerHTML += '<li>' + arguments[i] + '</li><br />';
 						}
 					}
 					log(...arguments); //also log to console
@@ -72,18 +81,21 @@ This page will convert <a href="https://github.com/textiles-lab/knitout">knitout
 					output.innerHTML = kcodeStr;
 					//add top scroll/fit content nicely
 					output.style.width = '98%',
-						output.style.whiteSpace = 'nowrap';
+						output.style.whiteSpace = 'pre';
 					topScroll.style.width = '98%',
 						topScroll.style.overflowX = 'scroll',
 						topScroll.style.overflowY = 'hidden';
 					(output.scrollHeight >= 700) ? output.style.height = '700px' : ((output.style.height = 'auto'), (output.style.height = output.scrollHeight + 'px'), (output.style.overflowY = 'hidden'));
-					document.getElementById('pseudo').style.width = 1.2 * output.scrollWidth;
-					document.getElementById('pseudo').style.height = '20px';
+				  const top = document.getElementById('top');
+					top.style.width = 1.02 * output.scrollWidth;
+					top.style.height = '20px';
 					//create output file & add properties to download button
 					const url = URL.createObjectURL(blob);
 					const a = document.getElementById('kcode-download');
 					a.href = url;
 					a.download = kcFile;
+					a.classList.remove('inactive');
+					a.removeAttribute('title');
 				} catch (e) {
 					console.error(e);
 				}
@@ -93,7 +105,7 @@ This page will convert <a href="https://github.com/textiles-lab/knitout">knitout
 			//file loading modified from knitout-live-visualizer:
 			function readFile(file) {
 				const m = document.getElementById('messages');
-				m.innerHTML = ''; //clear messages '(none yet)' placeholder
+				m.innerHTML = '<br>'; //clear messages '(none yet)' placeholder
 				console.log("Attempting to read file: '" + file.name + "'.");
 
 				//generate new data:

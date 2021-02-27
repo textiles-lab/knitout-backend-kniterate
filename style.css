@@ -1,0 +1,133 @@
+body {
+  background: #d8e6f3;
+  color: #282a36;
+  margin-top: 3vh;
+  margin-bottom: 3vh;
+  margin-left: 3vw;
+  margin-right: 3vw;
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 16px;
+}
+
+#wrapper {
+  display: grid;
+  align-items: left;
+  justify-items: left;
+  grid-template-columns: 40% 60%;
+}
+
+#column1 {
+  grid-column: 1;
+  padding-right: 1em;
+}
+
+#column2 {
+  grid-column: 2;
+  width: 100%;
+  padding-left: 1em;
+  overflow: hidden;
+}
+
+a {
+  text-decoration: none;
+  color: #3383ff;
+}
+a:hover {
+  text-decoration: underline;
+}
+a.inactive {
+  text-decoration: none;
+}
+a.broken {
+  color: #800;
+  cursor: not-allowed;
+}
+
+h1 {
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 40px;
+  -moz-text-fill-color: #d6ff74;
+  -webkit-text-fill-color: #d6ff74;
+  -moz-text-stroke-color: #3383ff;
+  -webkit-text-stroke-color: #3383ff;
+  -moz-text-stroke-width: 1px;
+  -webkit-text-stroke-width: 0.05px;
+  font-weight: 900;
+}
+/* target firefox */
+@-moz-document url-prefix() {
+  h1 {
+    -webkit-text-stroke-width: 1px;
+  }
+}
+
+h2 {
+  font-family: 'Source Code Pro', sans-serif;
+  font-size: 20px;
+  /* color: #3383ff; */
+  color: #ff1786;
+  /* color: #7934fa; */
+  font-weight: 900;
+}
+
+input[type='file'] {
+  display: none;
+}
+
+.button {
+  background: #e2f3bb;
+  color: #3383ff;
+  border: 1px solid #ccc;
+  display: inline-block;
+  padding: 6px 12px;
+  cursor: pointer;
+  outline: 1px solid #fff;
+  outline-offset: -4px;
+}
+.button:hover,
+.button:focus {
+  background: #d6ff74;
+  text-decoration: underline;
+}
+.button.inactive {
+  text-decoration: none;
+  background: #d8d8d8;
+  color: #a7a7a7;
+  outline-color: #ccc;
+  cursor: not-allowed;
+}
+
+.inactive:hover,
+.inactive:focus {
+  background: #d8d8d8;
+}
+
+li {
+  justify-content: start;
+  align-items: center;
+  list-style-type: none;
+}
+
+#messages > li {
+  display: grid;
+  grid-template-columns: 20px auto;
+  margin-left: -2em;
+  color: white;
+  font-size: 14px;
+  font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+}
+
+li::before {
+  content: '>';
+  align-self: flex-start;
+  font-size: 14px;
+  color: #ff1786;
+}
+
+textarea,
+code {
+  font-size: 14px;
+  font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+  background-color: #282a36;
+  color: white;
+}
