@@ -119,7 +119,7 @@ This page will convert <a href="https://github.com/textiles-lab/knitout">knitout
 						topScroll.style.overflowX = 'scroll',
 						topScroll.style.overflowY = 'hidden';
 					(output.scrollHeight >= 700) ? output.style.height = '700px' : ((output.style.height = 'auto'), (output.style.height = output.scrollHeight + 'px'), (output.style.overflowY = 'hidden'));
-				  const top = document.getElementById('top');
+					const top = document.getElementById('top');
 					top.style.width = 1.02 * output.scrollWidth;
 					top.style.height = '20px';
 					//create output file & add properties to download button
@@ -172,6 +172,7 @@ This page will convert <a href="https://github.com/textiles-lab/knitout">knitout
 			const infile = document.getElementById('infile');
 			infile.addEventListener('change', (evt) => {
 				readFile(infile.files[0]);
+				infile.value = '';
 				evt.preventDefault();
 				return false;
 			});

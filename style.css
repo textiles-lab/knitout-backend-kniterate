@@ -80,10 +80,8 @@ h1 {
   font-size: 40px;
   -moz-text-fill-color: #d6ff74;
   -webkit-text-fill-color: #d6ff74;
-  -moz-text-stroke-color: #3383ff;
-  -webkit-text-stroke-color: #3383ff;
-  -moz-text-stroke-width: 1px;
-  -webkit-text-stroke-width: 0.05px;
+  -moz-text-stroke: 1px #3383ff;
+  -webkit-text-stroke: 1px #3383ff;
   font-weight: 900;
 }
 /* target firefox */
