@@ -6,7 +6,7 @@ For converting knitout to k-code so that the operations can run on a Kniterate m
 K-code (.kc) is the file format used for [Kniterate](https://www.kniterate.com/) knitting machines.
 
 <table>
-<tr><td><a href="#installation">Installation</a></td><td><a href="#browser">Running in Browser</a></td><td><a href="#local">Running Locally</a></td><td><a href="#example-code">Example Code</a></td><td><a href="#troubleshooting">Troubleshooting</a></td></tr>
+<tr><td><a href="#installation">Installation</a></td><td><a href="#browser">Running in Browser</a></td><td><a href="#local">Running Locally</a></td><td><a href="#example-code">Example Code</a></td><td><a href="#troubleshooting">Troubleshooting</a></td><td><a href="#resources">Additional Resources</a></td></tr>
 </table>
 
 ## <a name="installation"></a>Installation
@@ -76,4 +76,7 @@ For example files (pairs of file.k [input file] and file.kc [expected output]) s
 
 This program is currently in somewhat of a 'beta-testing' stage, so we anticipate that users will have questions about usage or suggestions for enhancement, and may encounter some bugs. We welcome your feedback and encourage you to reach out via the [Issues](https://github.com/textiles-lab/knitout-backend-kniterate/issues) page.
 
+## <a name="resources"></a>Additional Resources
+
+<b>Live Visualizer</b>
 You can use the [knitout live visualizer](https://textiles-lab.github.io/knitout-live-visualizer/) to see a virtual depiction of your knit before running it on the machine (+ live coding support).
