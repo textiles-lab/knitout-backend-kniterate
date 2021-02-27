@@ -35,7 +35,10 @@ To run the program in a browser, simply:
 
 <b><a name="browser-use">Usage</b> 
   
-> **TODO:** add documentation on this
+1. Click the *Choose File* button under the **Knitout (input)** header, and select the knitout file that you'd like to convert to k-code.
+2. As the file is loading, information and errors will appear in the 'Messages' section.
+3. Once the file has finished loading, the *Download* button under the **KCode (output)** will become active (signaled by a colorized appearance) and the contents of the output k-code file will be displayed below.
+4. Click the *Download* button to save the file to your computer.
 
 ## <a name="local"></a>Running Locally
 
