@@ -1597,7 +1597,7 @@ function passesToKCode(headers, passes, kcFile) {
 		out(op);
 	});
 
-	return kcode;
+	return kcode.join("\n") + "\n";
 }
 
 
@@ -1621,6 +1621,3 @@ if (typeof(window) === 'undefined') {
 		fs.writeFileSync(kcFile, kcode);
 	}
 }
-
-
-//fs.writeFileSync(kcFile, kcode.join("\n") + "\n");

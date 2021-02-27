@@ -1,21 +1,205 @@
 <html>
-	<head>
-		<meta charset="utf-8">
-		<title>Knitout for Kniterate</title>
-		<link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400&display=swap" rel="stylesheet">
-		<link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@300&display=swap" rel="stylesheet">
-		<link href="style.css" rel="stylesheet">
-	</head>
-	<body>
-		<h1>Knitout to KCode</h1>
-		<p>
+<head>
+<meta charset="utf-8">
+<title>Knitout for Kniterate</title>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@300&display=swap" rel="stylesheet">
+<style>
+body {
+  background: #d8e6f3;
+  color: #282a36;
+  margin-top: 3vh;
+  margin-bottom: 3vh;
+  margin-left: 3vw;
+  margin-right: 3vw;
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 16px;
+}
+
+#wrapper {
+  display: grid;
+  align-items: left;
+  justify-items: left;
+  grid-template-columns: 40% 60%;
+}
+
+#column1 {
+  grid-column: 1;
+  padding-right: 1em;
+}
+
+#column2 {
+  grid-column: 2;
+  width: 100%;
+  padding-left: 1em;
+  overflow: hidden;
+}
+
+/* dropTarget style from dat viewer */
+#dropTarget {
+	position:fixed;
+	top:0;
+	left:0;
+	width:100vw;
+	height:100vh;
+	visibility:hidden;
+
+	background:#cccf;
+	outline:4px dashed #eee;
+	outline-offset:-20px;
+	z-index:100;
+	visibility:hidden;
+
+	display:flex;
+	flex-flow:row;
+	align-items:center;
+	justify-content:center;
+}
+
+#dropTarget:before {
+	content:"Drop a Knitout (.k / .knitout) File Here";
+	font-size:30px;
+	font-weight:bold;
+	color:#eee;
+}
+
+#dropTarget.active {
+	visibility:visible;
+}
+
+a {
+  text-decoration: none;
+  color: #3383ff;
+}
+a:hover {
+  text-decoration: underline;
+}
+a.inactive {
+  text-decoration: none;
+}
+a.broken {
+  color: #800;
+  cursor: not-allowed;
+}
+
+h1 {
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 40px;
+  -moz-text-fill-color: #d6ff74;
+  -webkit-text-fill-color: #d6ff74;
+  -moz-text-stroke: 1px #3383ff;
+  -webkit-text-stroke: 1px #3383ff;
+  font-weight: 900;
+}
+
+h2 {
+  font-family: 'Source Code Pro', sans-serif;
+  font-size: 20px;
+  /* color: #3383ff; */
+  color: #ff1786;
+  /* color: #7934fa; */
+  font-weight: 900;
+}
+
+input[type='file'] {
+  display: none;
+}
+
+.button {
+  background: #e2f3bb;
+  color: #3383ff;
+  border: 1px solid #ccc;
+  display: inline-block;
+  padding: 6px 12px;
+  cursor: pointer;
+  outline: 1px solid #fff;
+  outline-offset: -4px;
+}
+.button:hover,
+.button:focus {
+  background: #d6ff74;
+  text-decoration: underline;
+}
+.button.inactive {
+  text-decoration: none;
+  background: #d8d8d8;
+  color: #a7a7a7;
+  outline-color: #ccc;
+  cursor: not-allowed;
+}
+
+.inactive:hover,
+.inactive:focus {
+  background: #d8d8d8;
+}
+
+#messages {
+	background-color:#282a36;
+	margin:0.5em;
+	padding:0.5em 0.5em 0.5em 20px;
+
+	font-size: 14px;
+	font-family: 'Source Code Pro', monospace;
+	color:#fff;
+}
+
+#messages > li {
+	margin:0.25em 0;
+}
+
+#messages > li.log { color:#999; }
+#messages > li.log::before { color:#888; }
+
+#messages > li.info { color:#ddd; }
+#messages > li.info::before { color:#aaa; }
+
+#messages > li.warn { color:#ff5; }
+#messages > li.warn::before { content:'⚠️'; color:#ff0; font-size:10px; }
+
+
+#messages > li.error { color:#f55; }
+#messages > li.error::before { content:'🛑'; color:#f00; font-size:10px; }
+
+#messages > li.assert { color:#000; background:#bbb; }
+#messages > li.assert::before { content:'💣'; color:#000; background:#bbb; font-size:14px; }
+
+ul, ol {
+	list-style:none;
+}
+
+li::before {
+  content: '>';
+  display:inline-block;
+  width:15px;
+  margin-left:-15px;
+  color: #ff1786;
+}
+
+#output {
+	font-size: 14px;
+	font-family: 'Source Code Pro', monospace;
+	background-color: #282a36;
+	color: white;
+	whitespace:pre;
+	overflow:scroll;
+	resize:both;
+	min-height:10em;
+}
+
+#output:empty:before {
+	content:'(no output yet)';
+}
+</style>
+</head>
+<body>
+<h1>Knitout to KCode</h1>
+<p>
 This page will convert <a href="https://github.com/textiles-lab/knitout">knitout</a> -- a low-level knitting machine output language -- into <a class="broken" href="">kcode</a>, the format used by <a href="https://kniterate.com/">Kniterate</a> knitting machines.
-		</p>
-		<ul>
+</p>
+<ul>
 <li><a href="https://github.com/textiles-lab/knitout-backend-kniterate/issues">report bugs</a></li>
 <li><a href="https://github.com/textiles-lab/knitout-backend-kniterate/">get source code</a> (includes a command-line version)</li>
-		</ul>
-		<br>
+</ul>
 <div id="wrapper">
 	<div id="column1">
 		<h2>Knitout <span style="font-size:16px">(input)</span></h2>
@@ -35,180 +219,191 @@ This page will convert <a href="https://github.com/textiles-lab/knitout">knitout
 	</div>
 	<div id="column2">
 		<h2>KCode <span style="font-size:16px">(output)</span></h2>
-		<a id="kcode-download" title="No file chosen" class="button inactive" href="" download="">Download</a><br><br>
+		<a id="download" title="No output to download." class="button inactive" href="#">Download</a><br><br>
 		<div id="top-scroll">
 			<div id="top"></div>
 		</div>
-		<textarea id="output" style="width:fit-content">
-(no output yet)
-		</textarea>
+		<pre id="output" style="width:80em"></pre>
 	</div>	
 </div>
 <div id="dropTarget"></div>
 
-		<script src="knitout-to-kcode.js"></script>
-		<script>
+<script src="knitout-to-kcode.js"></script>
+<script>
+//output elements:
+const output = document.getElementById('output');
+const download = document.getElementById('download');
 
-			//link pseudo-top scroll bar to output for scrolling through horizontal overflow
-			const topScroll = document.getElementById('top-scroll');
-			const output = document.getElementById('output');
-			topScroll.onscroll = function () {
-					output.scrollLeft = topScroll.scrollLeft;
-				}
-				output.onscroll = function () {
-					topScroll.scrollLeft = output.scrollLeft;
-				}
+//link pseudo-top scroll bar to output for scrolling through horizontal overflow
+const topScroll = document.getElementById('top-scroll');
 
-			function processKnitout(filename, text) {
-				//automatically add console logs to messages innerHTML
-				const real = {
-					log:console.log,
-					info:console.info,
-					warn:console.warn,
-					error:console.error,
-					assert:console.assert
-				}
-				const messages = document.getElementById('messages');
-				function makeMessage() {
-					let message = '';
-					for (const a of arguments) {
-						if (typeof a === 'object') {
-							message += JSON.stringify(a, undefined, 2);
-						} else {
-							message += a.toString();
-						}
-					}
-					return message;
-				}
-				for (const name of ['log', 'info', 'warn', 'error']) {
-					console[name] = function () {
-						real[name](...arguments); //also log to console
-						const li = document.createElement("LI");
-						li.classList.add(name);
-						li.innerText = makeMessage(...arguments);
-						messages.appendChild(li);
-					};
-				}
+topScroll.onscroll = function () {
+	output.scrollLeft = topScroll.scrollLeft;
+};
+output.onscroll = function () {
+	topScroll.scrollLeft = output.scrollLeft;
+};
 
-				console.assert = function () {
-					if (arguments[0]) {
-						//don't print anything, condition was true.
-					} else {
-						const li = document.createElement("LI");
-						li.classList.add('assert');
-						li.innerText = makeMessage(...[...arguments].slice(1)); // [...arguments] converts to array so we can slice off the first (condition) argument
-						messages.appendChild(li);
-					}
-					real.assert(...arguments); //also log to console
-				};
-				try {
-					let kcFile;
-					let i = filename.lastIndexOf('.');
-					if (i === -1) kcFile = filename + '.kc';
-					else kcFile = filename.substr(0,i) + '.kc';
-					const {headers, passes} = knitoutToPasses(text, filename);
-					const kcode = passesToKCode(headers, passes, kcFile);
-					//join array with line breaks; write file to blob
-					const kcodeStr = kcode.join('\n');
-					const blob = new Blob([kcodeStr], { type: "text/kc" });
-					output.innerHTML = kcodeStr;
-					//add top scroll/fit content nicely
-					output.style.width = '98%',
-						output.style.whiteSpace = 'pre';
-					topScroll.style.width = '98%',
-						topScroll.style.overflowX = 'scroll',
-						topScroll.style.overflowY = 'hidden';
-					(output.scrollHeight >= 700) ? output.style.height = '700px' : ((output.style.height = 'auto'), (output.style.height = output.scrollHeight + 'px'), (output.style.overflowY = 'hidden'));
-					const top = document.getElementById('top');
-					top.style.width = 1.02 * output.scrollWidth;
-					top.style.height = '20px';
-					//create output file & add properties to download button
-					const url = URL.createObjectURL(blob);
-					const a = document.getElementById('kcode-download');
-					a.href = url;
-					a.download = kcFile;
-					a.classList.remove('inactive');
-					a.removeAttribute('title');
-				} catch (e) {
-					console.error(e);
-				}
-
-				for (const name of ['log', 'info', 'warn', 'error']) {
-					console[name] = real[name];
-				}
+function processKnitout(filename, text) {
+	//automatically add console logs to messages innerHTML
+	const real = {
+		log:console.log,
+		info:console.info,
+		warn:console.warn,
+		error:console.error,
+		assert:console.assert
+	}
+	const messages = document.getElementById('messages');
+	function makeMessage() {
+		let message = '';
+		for (const a of arguments) {
+			if (typeof a === 'object') {
+				message += JSON.stringify(a, undefined, 2);
+			} else {
+				message += a.toString();
 			}
+		}
+		return message;
+	}
+	for (const name of ['log', 'info', 'warn', 'error']) {
+		console[name] = function () {
+			real[name](...arguments); //also log to console
+			const li = document.createElement("LI");
+			li.classList.add(name);
+			li.innerText = makeMessage(...arguments);
+			messages.appendChild(li);
+		};
+	}
 
-			//file loading modified from knitout-live-visualizer:
-			function readFile(file) {
-				console.log("Attempting to read file: '" + file.name + "'.");
+	console.assert = function () {
+		if (arguments[0]) {
+			//don't print anything, condition was true.
+		} else {
+			const li = document.createElement("LI");
+			li.classList.add('assert');
+			li.innerText = makeMessage(...[...arguments].slice(1)); // [...arguments] converts to array so we can slice off the first (condition) argument
+			messages.appendChild(li);
+		}
+		real.assert(...arguments); //also log to console
+	};
+	try {
+		//determine output filename:
+		let kcFile;
+		let i = filename.lastIndexOf('.');
+		if (i === -1) kcFile = filename + '.kc';
+		else kcFile = filename.substr(0,i) + '.kc';
 
-				//reset messages:
-				const m = document.getElementById('messages');
-				m.innerHTML = '';
-				const li = document.createElement('LI');
-				li.innerText = `Processing file '${file.name}'...`;
-				li.classList.add('info');
-				m.appendChild(li);
+		//create kcode:
+		const {headers, passes} = knitoutToPasses(text, filename);
+		const kcode = passesToKCode(headers, passes, kcFile);
 
-				//generate new data:
-				var reader = new FileReader();
-				reader.onload = function(){
-					//document.getElementById('fileName').innerText = file.name;
-					console.log("read " + file.name);
-					let text = reader.result;
-					let oldText = text;
-					//line ending conversion:
-					text = text.replace(/\r\n/g,"\n");
-					if (oldText != text) {
-						console.warn("Converted dos-style line endings to unix-style.");
-					}
-					processKnitout(file.name, reader.result);
-				};
-				console.log("reading " + file.name + ".");
-				reader.readAsText(file);
+		//write kcode to output area on the page:
+		output.innerText = kcode;
 
-			}
+		//write kcode to blob and hook to "download" link:
+		const blob = new Blob([kcode]); //could set mime type here, but no mime type for kcode files exists, so "application/octet-stream" is probably the best one could do
+		download.href = URL.createObjectURL(blob);
+		download.download = kcFile;
+		download.classList.remove('inactive');
+		download.removeAttribute('title');
 
-			const infile = document.getElementById('infile');
-			infile.addEventListener('change', (evt) => {
-				readFile(infile.files[0]);
-				infile.value = '';
-				evt.preventDefault();
-				return false;
-			});
+		//add top scroll/fit content nicely
+		output.style.width = '98%',
+		topScroll.style.width = '98%',
+			topScroll.style.overflowX = 'scroll',
+			topScroll.style.overflowY = 'hidden';
+		(output.scrollHeight >= 700) ? output.style.height = '700px' : ((output.style.height = 'auto'), (output.style.height = output.scrollHeight + 'px'), (output.style.overflowY = 'hidden'));
+		const top = document.getElementById('top');
+		top.style.width = 1.02 * output.scrollWidth;
+		top.style.height = '20px';
 
-			const dropTarget = document.getElementById("dropTarget");
-			//dragging into the window also loads files:
-			dropTarget.addEventListener('dragover', function(evt){
-				dropTarget.classList.add("active");
-				evt.preventDefault();
-				return false;
-			});
-			dropTarget.addEventListener('dragleave', function(evt){
-				dropTarget.classList.remove("active");
-				evt.preventDefault();
-				return false;
-			});
-			dropTarget.addEventListener('drop', function(evt){
-				dropTarget.classList.remove("active");
-				try {
-					readFile(evt.dataTransfer.files[0]);
-				} catch (e) {
-					console.log(e);
-				}
-				evt.preventDefault();
-				return false;
-			});
-			
-			//dragging into the window shows the target:
-			document.addEventListener('dragover', function(evt){
-				dropTarget.classList.add("active");
-				evt.preventDefault();
-				return false;
-			});
+		console.info(`... done processing '${filename}'.`);
+	} catch (e) {
+		console.error(e);
+	}
+
+	for (const name of ['log', 'info', 'warn', 'error']) {
+		console[name] = real[name];
+	}
+}
+
+//file loading modified from knitout-live-visualizer:
+function readFile(file) {
+	console.log("Attempting to read file: '" + file.name + "'.");
+
+	//reset messages:
+	const m = document.getElementById('messages');
+	m.innerHTML = '';
+	const li = document.createElement('LI');
+	li.innerText = `Processing file '${file.name}'...`;
+	li.classList.add('info');
+	m.appendChild(li);
+
+	//reset output:
+	output.value = '';
+	download.setAttribute('title', 'No output to download');
+	download.classList.add('inactive');
+	download.href = '#';
+	download.removeAttribute('download');
 
 
+	//generate new data:
+	var reader = new FileReader();
+	reader.onload = function(){
+		//document.getElementById('fileName').innerText = file.name;
+		console.log("read " + file.name);
+		let text = reader.result;
+		let oldText = text;
+		//line ending conversion:
+		text = text.replace(/\r\n/g,"\n");
+		if (oldText != text) {
+			console.warn("Converted dos-style line endings to unix-style.");
+		}
+		processKnitout(file.name, reader.result);
+	};
+	console.log("reading " + file.name + ".");
+	reader.readAsText(file);
 
-		</script>
-	</body>
+}
+
+const infile = document.getElementById('infile');
+infile.addEventListener('change', (evt) => {
+	readFile(infile.files[0]);
+	infile.value = '';
+	evt.preventDefault();
+	return false;
+});
+
+const dropTarget = document.getElementById("dropTarget");
+//dragging into the window also loads files:
+dropTarget.addEventListener('dragover', function(evt){
+	dropTarget.classList.add("active");
+	evt.preventDefault();
+	return false;
+});
+dropTarget.addEventListener('dragleave', function(evt){
+	dropTarget.classList.remove("active");
+	evt.preventDefault();
+	return false;
+});
+dropTarget.addEventListener('drop', function(evt){
+	dropTarget.classList.remove("active");
+	try {
+		readFile(evt.dataTransfer.files[0]);
+	} catch (e) {
+		console.log(e);
+	}
+	evt.preventDefault();
+	return false;
+});
+
+//dragging into the window shows the target:
+document.addEventListener('dragover', function(evt){
+	dropTarget.classList.add("active");
+	evt.preventDefault();
+	return false;
+});
+
+</script>
+</body>
 </html>
