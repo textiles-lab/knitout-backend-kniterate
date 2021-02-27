@@ -28,6 +28,38 @@ body {
   overflow: hidden;
 }
 
+/* dropTarget style from dat viewer */
+#dropTarget {
+	position:fixed;
+	top:0;
+	left:0;
+	width:100vw;
+	height:100vh;
+	visibility:hidden;
+
+	background:#cccf;
+	outline:4px dashed #eee;
+	outline-offset:-20px;
+	z-index:100;
+	visibility:hidden;
+
+	display:flex;
+	flex-flow:row;
+	align-items:center;
+	justify-content:center;
+}
+
+#dropTarget:before {
+	content:"Drop a Knitout (.k / .knitout) File Here";
+	font-size:30px;
+	font-weight:bold;
+	color:#eee;
+}
+
+#dropTarget.active {
+	visibility:visible;
+}
+
 a {
   text-decoration: none;
   color: #3383ff;

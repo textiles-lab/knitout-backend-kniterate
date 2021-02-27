@@ -19,9 +19,8 @@ This page will convert <a href="https://github.com/textiles-lab/knitout">knitout
 <div id="wrapper">
 	<div id="column1">
 		<h2>Knitout <span style="font-size:16px">(input)</span></h2>
-Select a knitout (.k / .knitout) file or drag one into the window.<br>
-		<label for="infile" class="button">Choose File</label>
-		<input type="file" id="infile">
+		<label for="infile" class="button">Load a Knitout File</label> or drag one into the window.<br>
+		<input type="file" id="infile" style="display:none">
 				<h2>Messages</h2>
 				<ul id="messages" style="background-color:#282a36; padding-right:1em">
 					<br>
@@ -39,24 +38,11 @@ Select a knitout (.k / .knitout) file or drag one into the window.<br>
 		</textarea>
 	</div>	
 </div>
+<div id="dropTarget"></div>
 
 		<script src="knitout-to-kcode.js"></script>
 		<script>
-			//automatically add console logs to messages innerHTML
-			(function () {
-				let log = console.log;
-				const m = document.getElementById('messages');
-				console.log = function () {
-					for (var i = 0; i < arguments.length; ++i) {
-						if (typeof arguments[i] == 'object') {
-							m.innerHTML += '<li>' + (JSON && JSON.stringify ? JSON.stringify(arguments[i], undefined, 2) : arguments[i]) + '</li><br />';
-						} else {
-							m.innerHTML += '<li>' + arguments[i] + '</li><br />';
-						}
-					}
-					log(...arguments); //also log to console
-					}
-			})();
+
 			//link pseudo-top scroll bar to output for scrolling through horizontal overflow
 			const topScroll = document.getElementById('top-scroll');
 			const output = document.getElementById('output');
@@ -68,6 +54,36 @@ Select a knitout (.k / .knitout) file or drag one into the window.<br>
 				}
 
 			function processKnitout(filename, text) {
+				//automatically add console logs to messages innerHTML
+				const real = {
+					log:console.log,
+					info:console.info,
+					warn:console.warn,
+					error:console.error,
+					assert:console.assert
+				}
+				const messages = document.getElementById('messages');
+				function makeMessage() {
+					let message = '';
+					for (const a of arguments) {
+						if (typeof a === 'object') {
+							message += JSON.stringify(a, undefined, 2);
+						} else {
+							message += a.toString();
+						}
+					}
+					return message;
+				}
+				for (const name of ['log', 'info', 'warn', 'error']) {
+					console[name] = function () {
+						real[name](...arguments); //also log to console
+						const li = document.createElement("LI");
+						li.classList.add(name);
+						li.innerText = makeMessage(...arguments);
+						messages.appendChild(li);
+					};
+				}
+
 				try {
 					let kcFile;
 					let i = filename.lastIndexOf('.');
@@ -100,6 +116,9 @@ Select a knitout (.k / .knitout) file or drag one into the window.<br>
 					console.error(e);
 				}
 
+				for (const name of ['log', 'info', 'warn', 'error']) {
+					console[name] = real[name];
+				}
 			}
 
 			//file loading modified from knitout-live-visualizer:
@@ -130,13 +149,11 @@ Select a knitout (.k / .knitout) file or drag one into the window.<br>
 			const infile = document.getElementById('infile');
 			infile.addEventListener('change', (evt) => {
 				readFile(infile.files[0]);
-				infile.value = " "; //add space so default 'no file chosen' goes away
 				evt.preventDefault();
 				return false;
 			});
 
-			/*
-			var dropTarget = document.getElementById("dropTarget");
+			const dropTarget = document.getElementById("dropTarget");
 			//dragging into the window also loads files:
 			dropTarget.addEventListener('dragover', function(evt){
 				dropTarget.classList.add("active");
@@ -165,7 +182,6 @@ Select a knitout (.k / .knitout) file or drag one into the window.<br>
 				evt.preventDefault();
 				return false;
 			});
-			*/
 
 
 
