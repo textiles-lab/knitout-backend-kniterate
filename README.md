@@ -75,3 +75,5 @@ For example files (pairs of file.k [input file] and file.kc [expected output]) s
 ## <a name="troubleshooting"></a>Troubleshooting
 
 This program is currently in somewhat of a 'beta-testing' stage, so we anticipate that users will have questions about usage or suggestions for enhancement, and may encounter some bugs. We welcome your feedback and encourage you to reach out via the [Issues](https://github.com/textiles-lab/knitout-backend-kniterate/issues) page.
+
+You can use the [knitout live visualizer](https://textiles-lab.github.io/knitout-live-visualizer/) to see a virtual depiction of your knit before running it on the machine (+ live coding support).
