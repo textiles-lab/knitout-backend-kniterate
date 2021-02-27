@@ -134,25 +134,45 @@ input[type='file'] {
   background: #d8d8d8;
 }
 
-li {
-  justify-content: start;
-  align-items: center;
-  list-style-type: none;
+#messages {
+	background-color:#282a36;
+	margin:0.5em;
+	padding:0.5em 0.5em 0.5em 20px;
+
+	font-size: 14px;
+	font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+	color:#fff;
 }
 
 #messages > li {
-  display: grid;
-  grid-template-columns: 20px auto;
-  margin-left: -2em;
-  color: white;
-  font-size: 14px;
-  font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+	margin:0.25em 0;
+}
+
+#messages > li.log { color:#999; }
+#messages > li.log::before { color:#888; }
+
+#messages > li.info { color:#ddd; }
+#messages > li.info::before { color:#aaa; }
+
+#messages > li.warn { color:#ff5; }
+#messages > li.warn::before { content:'⚠️'; color:#ff0; font-size:10px; }
+
+
+#messages > li.error { color:#f55; }
+#messages > li.error::before { content:'🛑'; color:#f00; font-size:10px; }
+
+#messages > li.assert { color:#000; background:#bbb; }
+#messages > li.assert::before { content:'💣'; color:#000; background:#bbb; font-size:14px; }
+
+ul, ol {
+	list-style:none;
 }
 
 li::before {
   content: '>';
-  align-self: flex-start;
-  font-size: 14px;
+  display:inline-block;
+  width:15px;
+  margin-left:-15px;
   color: #ff1786;
 }
 

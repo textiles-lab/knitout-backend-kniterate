@@ -11,21 +11,27 @@
 		<p>
 This page will convert <a href="https://github.com/textiles-lab/knitout">knitout</a> -- a low-level knitting machine output language -- into <a class="broken" href="">kcode</a>, the format used by <a href="https://kniterate.com/">Kniterate</a> knitting machines.
 		</p>
-		<p>
-<li>&ensp;<a href="https://github.com/textiles-lab/knitout-backend-kniterate/issues">report bugs</a></li><br>
-<li>&ensp;<a href="https://github.com/textiles-lab/knitout-backend-kniterate/">get source code</a> (includes a command-line version)</li>
-		</p>
+		<ul>
+<li><a href="https://github.com/textiles-lab/knitout-backend-kniterate/issues">report bugs</a></li>
+<li><a href="https://github.com/textiles-lab/knitout-backend-kniterate/">get source code</a> (includes a command-line version)</li>
+		</ul>
 		<br>
 <div id="wrapper">
 	<div id="column1">
 		<h2>Knitout <span style="font-size:16px">(input)</span></h2>
 		<label for="infile" class="button">Load a Knitout File</label> or drag one into the window.<br>
 		<input type="file" id="infile" style="display:none">
-				<h2>Messages</h2>
-				<ul id="messages" style="background-color:#282a36; padding-right:1em">
-					<br>
-					<li>(none yet)</li><br>
-				</ul>
+		<h2>Messages</h2>
+		<ul id="messages">
+			<li class="info">(none yet)</li>
+			<!--
+			<li class="log">Messages from a console.log command end up looking like this text here looks</li>
+			<li class="info">Messages from a console.info command end up looking like this text here looks</li>
+			<li class="warn">Messages from a console.warn command end up looking like this text here looks</li>
+			<li class="error">Messages from a console.error command end up looking like this text here looks</li>
+			<li class="assert">Messages from a console.assert command end up looking like this text here looks</li>
+			-->
+		</ul>
 	</div>
 	<div id="column2">
 		<h2>KCode <span style="font-size:16px">(output)</span></h2>
@@ -84,6 +90,17 @@ This page will convert <a href="https://github.com/textiles-lab/knitout">knitout
 					};
 				}
 
+				console.assert = function () {
+					if (arguments[0]) {
+						//don't print anything, condition was true.
+					} else {
+						const li = document.createElement("LI");
+						li.classList.add('assert');
+						li.innerText = makeMessage(...[...arguments].slice(1)); // [...arguments] converts to array so we can slice off the first (condition) argument
+						messages.appendChild(li);
+					}
+					real.assert(...arguments); //also log to console
+				};
 				try {
 					let kcFile;
 					let i = filename.lastIndexOf('.');
@@ -123,9 +140,15 @@ This page will convert <a href="https://github.com/textiles-lab/knitout">knitout
 
 			//file loading modified from knitout-live-visualizer:
 			function readFile(file) {
-				const m = document.getElementById('messages');
-				m.innerHTML = '<br>'; //clear messages '(none yet)' placeholder
 				console.log("Attempting to read file: '" + file.name + "'.");
+
+				//reset messages:
+				const m = document.getElementById('messages');
+				m.innerHTML = '';
+				const li = document.createElement('LI');
+				li.innerText = `Processing file '${file.name}'...`;
+				li.classList.add('info');
+				m.appendChild(li);
 
 				//generate new data:
 				var reader = new FileReader();
