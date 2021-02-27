@@ -33,6 +33,10 @@ To run the program in a browser, simply:
 1. Open the file explorer on your computer and navigate to the directory that you cloned the repository into.
 2. There, you'll find a file named [index.html](index.html), which you can open in your web browser of choice to run the program.
 
+(or)
+
+1. Navigate to [https://textiles-lab.github.io/knitout-backend-kniterate/](https://textiles-lab.github.io/knitout-backend-kniterate/), which serves the file directly from this repository.
+
 <b><a name="browser-use">Usage</b> 
   
 1. Click the *Choose File* button under the **Knitout (input)** header, and select the knitout file that you'd like to convert to k-code.
