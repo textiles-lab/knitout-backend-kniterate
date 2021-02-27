@@ -8,31 +8,10 @@
 body {
   background: #d8e6f3;
   color: #282a36;
-  margin-top: 3vh;
-  margin-bottom: 3vh;
-  margin-left: 3vw;
-  margin-right: 3vw;
+  margin:0;
+  padding:0;
   font-family: 'Source Sans Pro', sans-serif;
   font-size: 16px;
-}
-
-#wrapper {
-  display: grid;
-  align-items: left;
-  justify-items: left;
-  grid-template-columns: 40% 60%;
-}
-
-#column1 {
-  grid-column: 1;
-  padding-right: 1em;
-}
-
-#column2 {
-  grid-column: 2;
-  width: 100%;
-  padding-left: 1em;
-  overflow: hidden;
 }
 
 /* dropTarget style from dat viewer */
@@ -99,48 +78,110 @@ h2 {
   color: #ff1786;
   /* color: #7934fa; */
   font-weight: 900;
+  margin:0 0 10px 0;
+  padding:0;
 }
 
-input[type='file'] {
-  display: none;
+main p {
+	margin:10px 5px 5px 5px;
+	padding:0;
 }
 
-.button {
-  background: #e2f3bb;
-  color: #3383ff;
-  border: 1px solid #ccc;
-  display: inline-block;
-  padding: 6px 12px;
-  cursor: pointer;
-  outline: 1px solid #fff;
-  outline-offset: -4px;
-}
-.button:hover,
-.button:focus {
-  background: #d6ff74;
-  text-decoration: underline;
-}
-.button.inactive {
-  text-decoration: none;
-  background: #d8d8d8;
-  color: #a7a7a7;
-  outline-color: #ccc;
-  cursor: not-allowed;
+#explaination {
+	padding:5px 20px 2px 20px;
+	background:#bdcbd9;
+	color:#333;
+	text-align:center;
 }
 
-.inactive:hover,
-.inactive:focus {
-  background: #d8d8d8;
+a.markedLink:before {
+	content:'🔗';
+	margin:0 3px 0 10px;
+	font-size:90%;
 }
 
+main {
+	display:flex;
+	flex-flow:row;
+	align-items:stretch;
+	justify-content:center;
+	margin:50px 10px;
+}
+
+main > div {
+	background:#bbb;
+	border-radius:10px;
+	max-width:18em;
+	padding:10px;
+	margin:0 5px;
+}
+
+main > #to {
+	border:none;
+	border-radius:0;
+	width:70px;
+	background: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100mm" height="100mm" viewBox="0 0 100 100" version="1.1">%3Cpath style="fill:%23ff1786;stroke:none;" d="M 0,30 H 40 V 0 L 100,50 40,100 V 70 H 0 Z"/>%3C/svg>');
+	background-size:contain;
+	background-repeat:no-repeat;
+	background-position:center;
+}
+
+.file {
+	background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="61mm" height="81mm" viewBox="9.5 9.5 61 81" version="1.1">%3Cpath style="fill:%23f2f2f2;stroke:%23000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none" d="M 10,90 V 30 L 30,10 H 70 V 90 Z" />%3Cpath style="fill:%23f9f9f9;stroke:%23000000;stroke-width:1;stroke-linejoin:bevel;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none" d="M 10,30 H 30 V 10 Z" />%3C/svg>');
+	background-size:contain;
+	background-repeat:no-repeat;
+	background-position:top;
+	box-sizing:border-box;
+	width:153px;
+	height:202px;
+
+	display:flex;
+	flex-flow:column;
+	justify-content:center;
+
+	padding:50px 10px 10px 10px;
+	text-align:center;
+
+	margin:0 auto;
+}
+
+.file.load {
+	cursor:pointer;
+}
+.file.load:hover {
+	text-decoration:underline;
+}
+
+.file.download {
+	cursor:pointer;
+}
+.file.download:hover {
+	text-decoration:underline;
+}
+
+.file.download.empty {
+	cursor:default;
+}
+.file.download.empty:before {
+	content:'';
+}
+
+.file.empty {
+	background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="61mm" height="81mm" viewBox="9.5 9.5 61 81" version="1.1">%3Cpath style="fill:%23f2f2f288;stroke:%23000000;stroke-width:1;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:2,2" d="M 10,90 V 30 L 30,10 H 70 V 90 Z" />%3Cpath style="fill:none;stroke:%23000000;stroke-width:1;stroke-linejoin:bevel;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:2,2" d="M 10,30 H 30 V 10" />%3C/svg>');
+}
+
+#messagesHeader {
+	margin:0 0 0 5px;
+}
 #messages {
 	background-color:#282a36;
-	margin:0.5em;
+	margin:0;
 	padding:0.5em 0.5em 0.5em 20px;
 
 	font-size: 14px;
 	font-family: 'Source Code Pro', monospace;
 	color:#fff;
+	min-height:200px;
 }
 
 #messages > li {
@@ -175,74 +216,158 @@ li::before {
   color: #ff1786;
 }
 
-#output {
-	font-size: 14px;
-	font-family: 'Source Code Pro', monospace;
-	background-color: #282a36;
-	color: white;
-	whitespace:pre;
-	overflow:scroll;
-	resize:both;
-	min-height:10em;
+#inFileName, #outFileName {
+	font-weight:bold;
 }
 
-#output:empty:before {
-	content:'(no output yet)';
+#inFileHolder:after {
+	content:'(click to load a different file)';
+	font-size:75%;
+	color:#333;
 }
+
+#inFileHolder.empty:after {
+	content:'Click to load a file (or drag one into the window)';
+	font-size:80%;
+}
+
+#outFileHolder:after {
+	content:'(click to download)';
+	font-size:75%;
+	color:#333;
+}
+
+#outFileHolder.empty:after {
+	content:'';
+	font-size:80%;
+}
+#outFileHolder.error:after {
+	content:'Error!';
+	font-size:200%;
+	color:#f44;
+}
+
 </style>
 </head>
 <body>
-<h1>Knitout to KCode</h1>
-<p>
-This page will convert <a href="https://github.com/textiles-lab/knitout">knitout</a> -- a low-level knitting machine output language -- into <a class="broken" href="">kcode</a>, the format used by <a href="https://kniterate.com/">Kniterate</a> knitting machines.
+<p id="explaination">
+This is a web version of the <a href="https://github.com/textiles-lab/knitout-backend-kniterate/">knitout-backend-kniterate</a> code developed by the <a href="https://textiles-lab.github.io/">Carnegie Mellon Textiles Lab</a>.<br>
+<a class="markedLink" href="https://github.com/textiles-lab/knitout-backend-kniterate/issues">Report bugs</a>.
+<a class="markedLink" href="https://github.com/textiles-lab/knitout-backend-kniterate/">Get source code</a> (also includes a command-line version).
 </p>
-<ul>
-<li><a href="https://github.com/textiles-lab/knitout-backend-kniterate/issues">report bugs</a></li>
-<li><a href="https://github.com/textiles-lab/knitout-backend-kniterate/">get source code</a> (includes a command-line version)</li>
-</ul>
-<div id="wrapper">
-	<div id="column1">
-		<h2>Knitout <span style="font-size:16px">(input)</span></h2>
-		<label for="infile" class="button">Load a Knitout File</label> or drag one into the window.<br>
-		<input type="file" id="infile" style="display:none">
-		<h2>Messages</h2>
-		<ul id="messages">
-			<li class="info">(none yet)</li>
-			<!--
-			<li class="log">Messages from a console.log command end up looking like this text here looks</li>
-			<li class="info">Messages from a console.info command end up looking like this text here looks</li>
-			<li class="warn">Messages from a console.warn command end up looking like this text here looks</li>
-			<li class="error">Messages from a console.error command end up looking like this text here looks</li>
-			<li class="assert">Messages from a console.assert command end up looking like this text here looks</li>
-			-->
-		</ul>
+
+
+<main>
+	<div>
+		<h2>Knitout</h2>
+		<label for="inFileInput" class="file load empty" id="inFileHolder">
+			<input type="file" id="inFileInput" style="display:none">
+			<div id="inFileName"></div>
+		</label>
+		<p>
+		<a href="https://github.com/textiles-lab/knitout">Knitout</a> (<code>.k</code> or <code>.knitout</code>) is an instruction-oriented and portable knitting machine language.
+		</p>
 	</div>
-	<div id="column2">
-		<h2>KCode <span style="font-size:16px">(output)</span></h2>
-		<a id="download" title="No output to download." class="button inactive" href="#">Download</a><br><br>
-		<div id="top-scroll">
-			<div id="top"></div>
-		</div>
-		<pre id="output" style="width:80em"></pre>
+	<div id="to">
+		<h2>to</h2>
+	</div>
+	<div>
+		<h2>KCode</h2>
+		<a id="outFileHolder" class="file download empty" href="#">
+		<div id="outFileName"></div>
+		</a>
+		<p>
+		KCode (<code>.kc</code>) is a pass-oriented control format used to drive <a href="https://www.kniterate.com/">Kniterate</a> knitting machines.
+		</p>
 	</div>	
+</main>
+
+<div>
+<h2 id="messagesHeader">Messages</h2>
+<ul id="messages">
+	<li class="info">(none yet)</li>
+	<!--
+	<li class="log">Messages from a console.log command end up looking like this text here looks</li>
+	<li class="info">Messages from a console.info command end up looking like this text here looks</li>
+	<li class="warn">Messages from a console.warn command end up looking like this text here looks</li>
+	<li class="error">Messages from a console.error command end up looking like this text here looks</li>
+	<li class="assert">Messages from a console.assert command end up looking like this text here looks</li>
+	-->
+</ul>
 </div>
+
 <div id="dropTarget"></div>
 
 <script src="knitout-to-kcode.js"></script>
 <script>
-//output elements:
-const output = document.getElementById('output');
-const download = document.getElementById('download');
 
-//link pseudo-top scroll bar to output for scrolling through horizontal overflow
-const topScroll = document.getElementById('top-scroll');
+//input controls:
+const inFileHolder = document.getElementById('inFileHolder');
+const inFileInput = document.getElementById('inFileInput');
+const inFileName = document.getElementById('inFileName');
 
-topScroll.onscroll = function () {
-	output.scrollLeft = topScroll.scrollLeft;
-};
-output.onscroll = function () {
-	topScroll.scrollLeft = output.scrollLeft;
-};
+function clearInFile() {
+	inFileHolder.classList.add('empty');
+
+	inFileName.innerHTML = '';
+}
+
+function setInFile(filename, text) {
+	inFileHolder.classList.remove('empty');
+
+	inFileName.innerText = filename;
+}
+
+//messages controls:
+const messages = document.getElementById('messages');
+
+function clearMessages() {
+	messages.innerHTML = '';
+}
+function addMessage(type, message) {
+	const li = document.createElement("LI");
+	li.classList.add(type);
+	li.innerText = message;
+	messages.appendChild(li);
+}
+
+//output controls:
+const outFileHolder = document.getElementById('outFileHolder');
+const outFileA = outFileHolder;
+const outFileName = document.getElementById('outFileName');
+
+function clearOutFile() {
+	outFileHolder.classList.add('empty');
+	outFileHolder.classList.remove('error');
+
+	outFileA.removeAttribute('href');
+	outFileA.removeAttribute('download');
+
+	outFileName.innerHTML = '';
+}
+
+function setOutFile(filename, text) {
+	outFileHolder.classList.remove('empty');
+
+	//write kcode to output area on the page:
+	//output.innerText = kcode;
+
+	//hook blob to "download" link:
+	const blob = new Blob([text]); //could set mime type here, but no mime type for kcode files exists, so "application/octet-stream" is probably the best one could do
+	outFileA.href = URL.createObjectURL(blob);
+	outFileA.download = filename;
+
+	//display filename:
+	outFileName.innerText = filename;
+}
+
+function setOutFileError() {
+	clearOutFile();
+	outFileHolder.classList.add('error');
+}
+
+//-----------------------------------------------
+
 
 function processKnitout(filename, text) {
 	//automatically add console logs to messages innerHTML
@@ -268,10 +393,7 @@ function processKnitout(filename, text) {
 	for (const name of ['log', 'info', 'warn', 'error']) {
 		console[name] = function () {
 			real[name](...arguments); //also log to console
-			const li = document.createElement("LI");
-			li.classList.add(name);
-			li.innerText = makeMessage(...arguments);
-			messages.appendChild(li);
+			addMessage(name, makeMessage(...arguments));
 		};
 	}
 
@@ -279,10 +401,8 @@ function processKnitout(filename, text) {
 		if (arguments[0]) {
 			//don't print anything, condition was true.
 		} else {
-			const li = document.createElement("LI");
-			li.classList.add('assert');
-			li.innerText = makeMessage(...[...arguments].slice(1)); // [...arguments] converts to array so we can slice off the first (condition) argument
-			messages.appendChild(li);
+			// [...arguments] converts to array so we can slice off the first (condition) argument:
+			addMessage('assert', makeMessage(...[...arguments].slice(1)));
 		}
 		real.assert(...arguments); //also log to console
 	};
@@ -297,28 +417,10 @@ function processKnitout(filename, text) {
 		const {headers, passes} = knitoutToPasses(text, filename);
 		const kcode = passesToKCode(headers, passes, kcFile);
 
-		//write kcode to output area on the page:
-		output.innerText = kcode;
-
-		//write kcode to blob and hook to "download" link:
-		const blob = new Blob([kcode]); //could set mime type here, but no mime type for kcode files exists, so "application/octet-stream" is probably the best one could do
-		download.href = URL.createObjectURL(blob);
-		download.download = kcFile;
-		download.classList.remove('inactive');
-		download.removeAttribute('title');
-
-		//add top scroll/fit content nicely
-		output.style.width = '98%',
-		topScroll.style.width = '98%',
-			topScroll.style.overflowX = 'scroll',
-			topScroll.style.overflowY = 'hidden';
-		(output.scrollHeight >= 700) ? output.style.height = '700px' : ((output.style.height = 'auto'), (output.style.height = output.scrollHeight + 'px'), (output.style.overflowY = 'hidden'));
-		const top = document.getElementById('top');
-		top.style.width = 1.02 * output.scrollWidth;
-		top.style.height = '20px';
-
+		setOutFile(kcFile, kcode);
 		console.info(`... done processing '${filename}'.`);
 	} catch (e) {
+		setOutFileError();
 		console.error(e);
 	}
 
@@ -331,21 +433,11 @@ function processKnitout(filename, text) {
 function readFile(file) {
 	console.log("Attempting to read file: '" + file.name + "'.");
 
-	//reset messages:
-	const m = document.getElementById('messages');
-	m.innerHTML = '';
-	const li = document.createElement('LI');
-	li.innerText = `Processing file '${file.name}'...`;
-	li.classList.add('info');
-	m.appendChild(li);
-
-	//reset output:
-	output.value = '';
-	download.setAttribute('title', 'No output to download');
-	download.classList.add('inactive');
-	download.href = '#';
-	download.removeAttribute('download');
-
+	//setup UI for new file:
+	setInFile(file.name, '');
+	clearMessages();
+	addMessage('info', `Processing '${file.name}'...`);
+	clearOutFile();
 
 	//generate new data:
 	var reader = new FileReader();
@@ -366,10 +458,9 @@ function readFile(file) {
 
 }
 
-const infile = document.getElementById('infile');
-infile.addEventListener('change', (evt) => {
-	readFile(infile.files[0]);
-	infile.value = '';
+inFileInput.addEventListener('change', (evt) => {
+	readFile(inFileInput.files[0]);
+	inFileInput.value = ''; //make it so that reloading file does properly reload file
 	evt.preventDefault();
 	return false;
 });
