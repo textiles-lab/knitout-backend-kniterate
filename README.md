@@ -20,7 +20,7 @@ To run the program in a browser, simply:
 
 (or) 
 
-1. Follow the steps in the [installation](#installation) section.
+1. Follow the steps in the <a href="#installation">installation</a> section.
 2. Open the file explorer on your computer and navigate to the directory that you cloned the repository into.
 3. There, you'll find a file named [index.html](index.html), which you can open in your web browser of choice to run the program.
 
@@ -58,7 +58,7 @@ See the github documentation on [cloning a repository](https://docs.github.com/e
 
 <b><a name="local-use"></a>Usage</b>
 
-1. Once the repository has been [cloned](#installation) onto your local machine, move the knitout (.k) file you would like to convert to k-code (.kc) into the program's directory (the folder 'knitout-backend-kniterate').
+1. Once the repository has been <a href="#installation">cloned</a> onto your local machine, move the knitout (.k) file you would like to convert to k-code (.kc) into the program's directory (the folder 'knitout-backend-kniterate').
 2. Then, navigate to the directory with this command:
 ```console
 cd knitout-backend-kniterate
