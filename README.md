@@ -43,7 +43,7 @@ Before cloning the repository, make sure that the following dependencies are ins
 - [Git](https://git-scm.com/) (for copying the files in this repository to your local computer)
 - [Node.js](https://nodejs.org/) (a javascript engine for running the backend via command line)
 
-<b><a name="#installation"></a>Installation</b>
+<b><a name="installation"></a>Installation</b>
 
 1. Open the command line on your computer ('Terminal' if you're running macOS or linux, 'Command Prompt' for windows, or 'Git Bash' if you opted to install it alongside Git).
 2. If you would like to install this repository in a particular folder, first change into that directory (with the full path if it's a subdirectory) using the `cd` command:
