@@ -60,34 +60,6 @@ function Carrier(name) {
 	this.in = null; //the "in" operation that added this to the active set. (format: {op:"in", cs:["", "", ...]})
 }
 
-//TODO change these constants to ascii kcode values
-//map is stitch.leading => stitch number
-//NOTE: this is the opposite of how the 'stitch' op does it (leading, stitch).
-//NOTE: this doesn't do anything with 'YG', also what is YG?
-//NOTE: this should probably be read out of a .999 file of some sort
-const STITCH_NUMBERS = {
-	'10.-10':81,
-	'10.0': 82,
-	'10.10':83,
-	'15.5': 84,
-	'15.10':85,
-	'15.15':86,
-	'20.10':87,
-	'20.15':88,
-	'20.20':89,
-	'25.15':90,
-	'25.20':91,
-	'25.25':92,
-	'30.25':93,
-	'35.25':94,
-	'40.25':95,
-	'45.25':96,
-	'50.25':97,
-	'55.25':98,
-	'60.25':99,
-	'65.25':100
-};
-
 //parking locations for each carrier:
 //TODO: consider changing this
 const CARRIER_PARKING = [
@@ -229,13 +201,16 @@ function Pass(info) {
 	//type: one of the TYPE_* constants (REQUIRED)
 	//racking: number giving racking (REQUIRED)
 	//slots: raster index -> operation
+	//sizes: raster index -> stitch size numbers ({front:#, back:#})
+	//speed: pass speed
 	//direction: one of the DIRECTION_* constants
 	//carriers: array of carriers, possibly of zero length
 	//gripper: one of the GRIPPER_* constants or undefined
-	['type', 'slots', 'direction', 'carriers', 'stitch', 'roller', 'gripper', 'racking', 'pause', 'speed'].forEach(function(name){
+	['type', 'slots', 'direction', 'carriers', 'roller', 'gripper', 'racking', 'pause', 'speed', 'sizes'].forEach(function(name){
 		if (name in info) this[name] = info[name];
 	}, this);
 	if (!('slots' in this)) this.slots = {};
+	if (!('sizes' in this)) this.sizes = {};
 	if (!('carriers' in this)) this.carriers = [];
 
 	//Check that specification was reasonable:
@@ -297,7 +272,7 @@ Pass.prototype.append = function(pass) {
 	}
 
 	//some properties must match exactly:
-	if (!['racking', 'stitch', 'speed', 'direction', 'carriers'].every(function(name){
+	if (!['racking', 'speed', 'direction', 'carriers'].every(function(name){
 		return JSON.stringify(this[name]) === JSON.stringify(pass[name]);
 	}, this)) {
 		return false;
@@ -375,6 +350,18 @@ Pass.prototype.append = function(pass) {
 
 	}
 
+	//sizes must agree everywhere specified:
+	for (let s in pass.sizes) {
+		if (s in this.sizes) {
+			if (('front' in pass.sizes[s]) && ('front' in this.sizes[s]) && pass.sizes[s].front !== this.sizes[s].front) {
+				return false;
+			}
+			if (('back' in pass.sizes[s]) && ('back' in this.sizes[s]) && pass.sizes[s].back !== this.sizes[s].back) {
+				return false;
+			}
+		}
+	}
+
 	//---- actually merge next pass ----
 
 	this.type = merge_types(this.type, pass.type);
@@ -408,7 +395,13 @@ Pass.prototype.append = function(pass) {
 			this.slots[s] = pass.slots[s];
 		}
 	}
-
+	
+	//merge sizes:
+	for (let s in pass.sizes) {
+		if (!(s in this.sizes)) this.sizes[s] = {};
+		if ('front' in pass.sizes[s]) this.sizes[s].front = pass.sizes[s].front;
+		if ('back' in pass.sizes[s]) this.sizes[s].back = pass.sizes[s].back;
+	}
 
 	return true;
 };
@@ -539,8 +532,8 @@ function knitoutToPasses(knitout, knitoutFile) {
 
 	let carriers = {}; //carriers are held in an "name" => object map.
 	let racking = 0.0; //racking starts centered
-	let stitch = 5; //machine-specific stitch number
-	let xferStitch = 0; //machine-specific stitch number for transfers; 0 => default
+	let stitch = '5'; //current stitch size number
+	let xferStitch = '3'; //stitch size number for transfers
 	let speed = 100; //machine-specific speed number
 	let pausePending = false; //optional stop before next instruction, please
 	
@@ -631,7 +624,7 @@ function knitoutToPasses(knitout, knitoutFile) {
 						type:TYPE_SOFT_MISS,
 						slots:{},
 						racking:racking,
-						stitch:stitch,
+						//sizes:{},
 						roller: 0,
 						speed:speed,
 						carriers:slotCs[slot],
@@ -724,8 +717,8 @@ function knitoutToPasses(knitout, knitoutFile) {
 					let info = {
 						type:TYPE_SOFT_MISS,
 						slots:{},
+						//sizes:{},
 						racking:racking,
-						stitch:stitch,
 						roller: 0,
 						speed:speed,
 						carriers:[carrier.name],
@@ -747,8 +740,8 @@ function knitoutToPasses(knitout, knitoutFile) {
 					let info = {
 						type:TYPE_SOFT_MISS,
 						slots:{},
+						//sizes:{},
 						racking:racking,
-						stitch:stitch,
 						roller: 0,
 						speed:speed,
 						carriers:[carrier.name],
@@ -881,8 +874,8 @@ function knitoutToPasses(knitout, knitoutFile) {
 			let info = {
 				type:TYPE_SOFT_MISS,
 				slots:{},
+				//sizes:{},
 				racking:racking,
-				stitch:stitch,
 				roller: 0,
 				speed:speed,
 				carriers:cs,
@@ -917,23 +910,18 @@ function knitoutToPasses(knitout, knitoutFile) {
 			let newLeading = parseInt(args.shift());
 			let newStitch = parseInt(args.shift());
 
-			let key = newStitch + '.' + newLeading;
-			if (!(key in STITCH_NUMBERS)) {
-				console.log("Stitch number table:");
-				console.log(STITCH_NUMBERS);
-				throw `${knitoutFile}:${lineIdx+1} ERROR: leading " + newLeading + " with stitch " + newStitch + " doesn't appear in stitch number table.`;
-			}
-			stitch = STITCH_NUMBERS[key];
+			console.warn(`${knitoutFile}:${lineIdx+1} WARNING: 'stitch' command ignored; use x-stitch-number or build a proper translation table for stitch sizes.`);
 		} else if (op === 'x-presser-mode') {
 			console.warn(`${knitoutFile}:${lineIdx+1} WARNING: x-presser-mode not supported on this machine.`);
 		} else if (op === 'x-speed-number') {
 			if (args.length !== 1) throw `${knitoutFile}:${lineIdx+1} ERROR: x-speed-number takes one argument.`;
 			if (!/^[+-]?\d*\.?\d+$/.test(args[0])) throw `${knitoutFile}:${lineIdx+1} ERROR: x-speed-number must be a number.`;
 			speed = args[0];
-		} else if (op === 'x-stitch-number') {
-			if (args.length !== 1) throw `${knitoutFile}:${lineIdx+1} ERROR: x-stitch-number takes one argument.`;
-			if (!/^[+-]?\d*\.?\d+$/.test(args[0])) throw `${knitoutFile}:${lineIdx+1} ERROR: x-stitch-number must be a number.`;
-			stitch = args[0];
+		} else if (op === 'x-stitch-number' || op === 'x-xfer-stitch-number') {
+			if (args.length !== 1) throw `${knitoutFile}:${lineIdx+1} ERROR: ${op} takes one argument.`;
+			if (!/^[0-9A-Z]$/.test(args[0])) throw `${knitoutFile}:${lineIdx+1} ERROR: ${op} must be a number from 0-9 or a letter A-Z.`;
+			if (op === 'x-stitch-number') stitch = args[0];
+			if (op === 'x-xfer-stitch-number') xferStitch = args[0];
 		} else if (op === 'x-carrier-spacing') {
 			if (args.length !== 1) throw `${knitoutFile}:${lineIdx+1} ERROR: x-carrier-spacing takes one argument.`;
 			if (!/^[+-]?\d*\.?\d+$/.test(args[0])) throw `${knitoutFile}:${lineIdx+1} ERROR: x-carrier-spacing must be a number.`;
@@ -982,8 +970,8 @@ function knitoutToPasses(knitout, knitoutFile) {
 			let info = { //default: knit,tuck,miss -- roller advance = 100 (unless otherwise specified with x-add-roller-advance)
 				type:type,
 				slots:{},
+				sizes:{},
 				racking:racking,
-				stitch:stitch,
 				roller: roller,
 				speed:speed,
 				carriers:cs,
@@ -995,6 +983,12 @@ function knitoutToPasses(knitout, knitoutFile) {
 			else if (op === 'tuck') info.slots[slotString(n)] = (n.isFront() ? OP_TUCK_FRONT : OP_TUCK_BACK);
 			else if (op === 'knit') info.slots[slotString(n)] = (n.isFront() ? OP_KNIT_FRONT : OP_KNIT_BACK);
 			else console.assert(false, "op was miss, tuck, or knit");
+
+			//record stitch value for knit & tuck operations (but not miss):
+			if (op === 'tuck' || op === 'knit') {
+				info.sizes[slotString(n)] = {};
+				info.sizes[slotString(n)][(n.isFront() ? 'front' : 'back')] = stitch;
+			}
 
 			handleIn(cs, info);
 
@@ -1038,8 +1032,8 @@ function knitoutToPasses(knitout, knitoutFile) {
 			let info = { //default: xfer roller advance = 0 (unless otherwise specified with x-add-roller-advance)
 				type:type,
 				slots:{},
+				sizes:{},
 				racking:racking,
-				stitch:(cs.length === 0 ? xferStitch : stitch),
 				//roller: roller, //?
 				roller: 0 + addRoller,
 				speed:speed,
@@ -1047,7 +1041,14 @@ function knitoutToPasses(knitout, knitoutFile) {
 				direction:d,
 			};
 			if (addRoller !== 0) (roller -= addRoller), (addRoller = 0);
+
 			info.slots[slotString(n)] = op;
+			//record stitch for both source and target locations: (not sure if this matters):
+			info.sizes[slotString(n)] = {};
+			info.sizes[slotString(t)] = {};
+			info.sizes[slotString(n)][(n.isFront() ? 'front' : 'back')] = (cs.length === 0 ? xferStitch : stitch);
+			info.sizes[slotString(t)][(t.isFront() ? 'front' : 'back')] = (cs.length === 0 ? xferStitch : stitch);
+
 			handleIn(cs, info);
 
 			merge(new Pass(info));
@@ -1208,6 +1209,71 @@ function passesToKCode(headers, passes, kcFile) {
 			pass.comment = "(decayed from a SOFT_MISS)";
 		}
 
+		//helper: convert from sparse array of stitch sizes to dense STIF / STIR arrays:
+		function sizesToSTI(sizes, direction, defaultStitch) {
+			let STIF = [];
+			let STIR = [];
+
+			//fill in data from sizes array, using '*' for unknown:
+			for (let i = 0; i < 15; ++i) {
+				STIF.push('*');
+				STIR.push('*');
+			}
+			for (let n = 0; n <= 252; ++n) {
+				const f = frontNeedleToSlot(n);
+				if (f in sizes && 'front' in sizes[f]) STIF.push(sizes[f].front);
+				else STIF.push('*');
+				const b = backNeedleToSlot(n, pass.racking);
+				if (b in sizes && 'back' in sizes[b]) STIR.push(sizes[b].back);
+				else STIR.push('*');
+			}
+			for (let i = 0; i < 15; ++i) {
+				STIF.push('*');
+				STIR.push('*');
+			}
+
+			//fill in known data from unknown data:
+			function fill(STI) {
+				for (let begin = 0; begin < STI.length; /* later */) {
+					if (STI[begin] !== '*') {
+						begin += 1;
+						continue;
+					}
+					let end = begin + 1;
+					while (end < STI.length && STI[end] === '*') ++end;
+					//the range [begin, end) is all '*' now.
+
+					//How it gets filled depends on the range type:
+					if (begin === 0 && end === STI.length) {
+						//range is the whole bed -- fill with some default:
+						for (let i = begin; i < end; ++i) STI[i] = defaultStitch;
+					} else if (begin === 0) { console.assert(end < STI.length);
+						//range has only a right endpoint -- so fill with the value from this endpoint:
+						for (let i = begin; i < end; ++i) STI[i] = STI[end];
+					} else if (end === STI.length) { console.assert(begin > 0);
+						//range has only a left endpoint -- so use the value from this endpoint:
+						for (let i = begin; i < end; ++i) STI[i] = STI[begin-1];
+					} else { console.assert(begin > 0 && end < STI.length);
+						//range has both endpoints set -- use the "next" endpoint in pass direction:
+						if (direction === DIRECTION_LEFT) {
+							for (let i = begin; i < end; ++i) STI[i] = STI[begin-1];
+						} else if (direction === DIRECTION_RIGHT) {
+							for (let i = begin; i < end; ++i) STI[i] = STI[end];
+						} else {
+							console.assert(false, "Pass direction always known when setting STI*");
+						}
+					}
+
+					//move forward:
+					begin = end;
+				}
+			}
+			fill(STIR);
+			fill(STIF);
+
+			return {STIF:STIF.join(''), STIR:STIR.join('')};
+		}
+
 		if (pass.type === TYPE_XFER) {
 			//this code is going to split the transfers into several passes, using this handy helper:
 			function makeXferPass(direction, fromBed, toBed, checkNeedleFn, comment) {
@@ -1241,34 +1307,30 @@ function passesToKCode(headers, passes, kcFile) {
 				}
 
 				xpass.FRNT = '';
-				xpass.STIF = '';
 				xpass.REAR = '';
-				xpass.STIR = '';
 
 				for (let i = 0; i < 15; ++i) {
 					xpass.FRNT += '.';
 					xpass.REAR += '.';
-					xpass.STIF += '3'; //TODO: maybe add x-xfer-stitch-number extension?
-					xpass.STIR += '3';
 				}
 				for (let n = 0; n <= 252; ++n) {
 					xpass.FRNT += '_';
 					xpass.REAR += '_';
-					xpass.STIF += '3';
-					xpass.STIR += '3';
 				}
 				for (let i = 0; i < 15; ++i) {
 					xpass.FRNT += '.';
 					xpass.REAR += '.';
-					xpass.STIF += '3';
-					xpass.STIR += '3';
 				}
+				//n.b. default is '3' for STIF/STIR
 
 				function set(str, n) {
 					console.assert(str[n] === '_', "Setting unset needle");
 					return str.substr(0,n) + '-' + str.substr(n+1);
 				}
 
+				let sizes = {}; //subset of pass.sizes, will be used to set STIF/STIR later
+
+				//fill in front/rear actions:
 				for (let n = 0; n <= 252; ++n) {
 					if (checkNeedleFn(n)) {
 						if (fromBed === 'f') {
@@ -1276,17 +1338,41 @@ function passesToKCode(headers, passes, kcFile) {
 							xpass.REAR = set(xpass.REAR, 15 + n - pass.racking);
 							xpass.carriageLeft = Math.min(xpass.carriageLeft, n - carrierDistance);
 							xpass.carriageRight = Math.max(xpass.carriageRight, n + carrierDistance);
+
+							//copy sizes:
+							const f = frontNeedleToSlot(n);
+							const b = backNeedleToSlot(n - pass.racking, pass.racking);
+							console.assert(f in pass.sizes && 'front' in pass.sizes[f]); //size should be recorded for every operation!
+							console.assert(b in pass.sizes && 'back' in pass.sizes[b]); //size should be recorded for every operation!
+							if (!(f in sizes)) sizes[f] = {};
+							if (!(b in sizes)) sizes[b] = {};
+							sizes[f].front = pass.sizes[f].front;
+							sizes[b].back = pass.sizes[b].back;
+
 						} else { console.assert(fromBed === 'b', "only two options for fromBed");
 							xpass.FRNT = set(xpass.FRNT, 15 + n + pass.racking);
 							xpass.REAR = set(xpass.REAR, 15 + n);
 							xpass.carriageLeft = Math.min(xpass.carriageLeft, n - carrierDistance);
 							xpass.carriageRight = Math.max(xpass.carriageRight, n + carrierDistance);
+
+							//copy sizes:
+							const f = frontNeedleToSlot(n + pass.racking);
+							const b = backNeedleToSlot(n, pass.racking);
+							console.assert(f in pass.sizes && 'front' in pass.sizes[f]); //size should be recorded for every operation!
+							console.assert(b in pass.sizes && 'back' in pass.sizes[b]); //size should be recorded for every operation!
+							if (!(f in sizes)) sizes[f] = {};
+							if (!(b in sizes)) sizes[b] = {};
+							sizes[f].front = pass.sizes[f].front;
+							sizes[b].back = pass.sizes[b].back;
 						}
 					}
 				}
 
 				//don't add pass if it's empty:
 				if (xpass.carriageLeft > xpass.carriageRight) return;
+
+				//expanded partial sizes into STIF/STIR (stitch values) for xpass:
+				({STIF:xpass.STIF, STIR:xpass.STIR} = sizesToSTI(sizes, xpass.direction, '!')); //NOTE: using default value of '!' because both beds should always have at least *one* stitch size set if code got this far.
 
 				if (xpass.direction !== nextDirection) {
 					console.log("NOTE: 'wasting' a carriage move on an xfer pass.");
@@ -1368,7 +1454,6 @@ function passesToKCode(headers, passes, kcFile) {
 			let kpass = {
 				RACK:rack,
 				type:pass.type.kcode,
-				stitch:pass.stitch,
 				//speed:100,
 				speed: pass.speed,
 				//roller:100,
@@ -1489,15 +1574,11 @@ function passesToKCode(headers, passes, kcFile) {
 
 			//build needle selections:
 			kpass.FRNT = '';
-			kpass.STIF = '';
 			kpass.REAR = '';
-			kpass.STIR = '';
 
 			for (let i = 0; i < 15; ++i) {
 				kpass.FRNT += '.';
 				kpass.REAR += '.';
-				kpass.STIF += kpass.stitch;
-				kpass.STIR += kpass.stitch;
 			}
 			for (let n = 0; n <= 252; ++n) {
 				const f = frontNeedleToSlot(n);
@@ -1512,15 +1593,15 @@ function passesToKCode(headers, passes, kcFile) {
 				} else {
 					kpass.REAR += '_';
 				}
-				kpass.STIF += kpass.stitch;
-				kpass.STIR += kpass.stitch;
 			}
 			for (let i = 0; i < 15; ++i) {
 				kpass.FRNT += '.';
 				kpass.REAR += '.';
-				kpass.STIF += kpass.stitch;
-				kpass.STIR += kpass.stitch;
 			}
+
+			//build stitch values:
+			({STIR:kpass.STIR, STIF:kpass.STIF} = sizesToSTI(pass.sizes, kpass.direction, '0')); //using default of '0' on an empty bed because it shouldn't really matter (might induce a bit more stitch cam motion than using something else -- like doing lookahead to the next value used by that stitch cam)
+
 			kcodePasses.push(kpass);
 			nextDirection = (nextDirection === DIRECTION_RIGHT ? DIRECTION_LEFT : DIRECTION_RIGHT);
 		}
