@@ -9,6 +9,8 @@ Both ".k" (knitout) and ".kc" (kcode) files are included, with the intent that a
 
 `small-square.k` -- general purpose example exercising half-pitch racking and some transfers
 
+`xfer-style.k` -- test the `x-xfer-style` extension
+
 ## TODO
 
 Many tests are still needed!
