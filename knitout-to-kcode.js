@@ -545,7 +545,7 @@ function knitoutToPasses(knitout, knitoutFile) {
 	}
 
 	function merge(pass, shouldNotKick) {
-		const doPause = pausePending;
+		let doPause = pausePending;
 		pausePending = false;
 		const doEnd = endPending;
 		endPending = false;
