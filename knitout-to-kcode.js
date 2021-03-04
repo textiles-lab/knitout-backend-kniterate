@@ -528,6 +528,7 @@ function knitoutToPasses(knitout, knitoutFile) {
 	let xferStyle = 'four-pass'; //how transfers are divided between passes
 	let speed = 100; //machine-specific speed number
 	let pausePending = false; //optional stop before next instruction, please
+	let endPending = false; //end the current pass before the next instruction, please
 	
 	let roller = 100;
 	let addRoller = 0;
@@ -544,9 +545,11 @@ function knitoutToPasses(knitout, knitoutFile) {
 	}
 
 	function merge(pass, shouldNotKick) {
-		let doPause = pausePending;
+		const doPause = pausePending;
 		pausePending = false;
-		if (passes.length !== 0 && !doPause && passes[passes.length-1].append(pass)) {
+		const doEnd = endPending;
+		endPending = false;
+		if (passes.length !== 0 && !doPause && !doEnd && passes[passes.length-1].append(pass)) {
 			//great; pass was able to merge into existing pass no problem.
 		} else {
 			//need to start a new pass:
@@ -905,6 +908,9 @@ function knitoutToPasses(knitout, knitoutFile) {
 			console.warn(`${knitoutFile}:${lineIdx+1} WARNING: 'stitch' command ignored; use x-stitch-number or build a proper translation table for stitch sizes.`);
 		} else if (op === 'x-presser-mode') {
 			console.warn(`${knitoutFile}:${lineIdx+1} WARNING: x-presser-mode not supported on this machine.`);
+		} else if (op === 'x-end-pass') {
+			if (args.length !== 0) throw `${knitoutFile}:${lineIdx+1} ERROR: x-end-pass takes no arguments.`;
+			endPending = true;
 		} else if (op === 'x-xfer-style') {
 			if (args.length !== 1) throw `${knitoutFile}:${lineIdx+1} ERROR: x-xfer-style takes one argument.`;
 			if (!(args[0] === 'four-pass' || args[0] === 'two-pass')) throw `${knitoutFile}:${lineIdx+1} ERROR: x-xfer-style must be 'four-pass' or 'two-pass'.`;
