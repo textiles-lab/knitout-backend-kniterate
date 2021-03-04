@@ -22,6 +22,7 @@ tuck - f-1 6
 tuck - f-3 6
 tuck - f-5 6
 tuck - f-7 6
+tuck - f-9 6
 
 
 knit + f-10 6

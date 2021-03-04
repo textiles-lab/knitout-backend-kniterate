@@ -5,14 +5,14 @@
 ;;Carriers: 1 2 3 4 5 6
 
 in 6
-tuck + f2 6
-tuck + f4 6
-tuck + f6 6
+tuck + f1 6
+tuck + f3 6
+tuck + f5 6
+tuck + f7 6
 
-tuck - f7 6
-tuck - f5 6
-tuck - f3 6
-tuck - f1 6
+tuck - f6 6
+tuck - f4 6
+tuck - f2 6
 
 knit + f1 6
 knit + f2 6
