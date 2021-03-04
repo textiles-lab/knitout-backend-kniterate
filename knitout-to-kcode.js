@@ -40,18 +40,6 @@ BedNeedle.prototype.isBack = function(){
 	else throw "Invalid bed in BedNeedle.";
 };
 
-// BedNeedle.prototype.isHook = function(){
-// 	if (this.bed === 'f' || this.bed === 'b') return true;
-// 	else if (this.bed === 'fs' || this.bed === 'bs') return false;
-// 	else throw "Invalid bed in BedNeedle.";
-// };
-
-// BedNeedle.prototype.isSlider = function(){
-// 	if (this.bed === 'fs' || this.bed === 'bs') return true;
-// 	else if (this.bed === 'f' || this.bed === 'b') return false;
-// 	else throw "Invalid bed in BedNeedle.";
-// };
-
 //Carrier objects store information about each carrier:
 function Carrier(name) {
 	this.name = name;
@@ -144,7 +132,8 @@ const TYPE_TUCK_KNIT = {kcode:'Tu-Kn'};
 const TYPE_KNIT_TUCK = {kcode:'Kn-Tu'};
 const TYPE_TUCK_TUCK = {kcode:'Tu-Tu'};
 
-const TYPE_XFER = {front:'Xf', back:'Xf'}; //will actually get split in output
+const TYPE_XFER_FOUR_PASS = {front:'Xf', back:'Xf'}; //will actually get split in output
+const TYPE_XFER_TWO_PASS = {front:'Xf', back:'Xf'}; //will actually get split in output
 
 function merge_types(a,b) {
 	//same type, easy to merge:
@@ -152,11 +141,11 @@ function merge_types(a,b) {
 
 	//"soft miss" passes can merge with anything knit- or tuck- like:
 	if (a === TYPE_SOFT_MISS) {
-		if (b !== TYPE_XFER) return b;
+		if (b !== TYPE_XFER_FOUR_PASS && b !== TYPE_XFER_TWO_PASS) return b;
 		else return null;
 	}
 	if (b === TYPE_SOFT_MISS) {
-		if (a !== TYPE_XFER) return a;
+		if (a !== TYPE_XFER_FOUR_PASS && a !== TYPE_XFER_TWO_PASS) return a;
 		else return null;
 	}
 	
@@ -407,6 +396,8 @@ Pass.prototype.append = function(pass) {
 };
 
 
+
+
 let carrierSpacing = 2;
 let carrierDistance = 2.5;
 let leftFloor = true, //new
@@ -534,6 +525,7 @@ function knitoutToPasses(knitout, knitoutFile) {
 	let racking = 0.0; //racking starts centered
 	let stitch = '5'; //current stitch size number
 	let xferStitch = '3'; //stitch size number for transfers
+	let xferStyle = 'four-pass'; //how transfers are divided between passes
 	let speed = 100; //machine-specific speed number
 	let pausePending = false; //optional stop before next instruction, please
 	
@@ -913,6 +905,10 @@ function knitoutToPasses(knitout, knitoutFile) {
 			console.warn(`${knitoutFile}:${lineIdx+1} WARNING: 'stitch' command ignored; use x-stitch-number or build a proper translation table for stitch sizes.`);
 		} else if (op === 'x-presser-mode') {
 			console.warn(`${knitoutFile}:${lineIdx+1} WARNING: x-presser-mode not supported on this machine.`);
+		} else if (op === 'x-xfer-style') {
+			if (args.length !== 1) throw `${knitoutFile}:${lineIdx+1} ERROR: x-xfer-style takes one argument.`;
+			if (!(args[0] === 'four-pass' || args[0] === 'two-pass')) throw `${knitoutFile}:${lineIdx+1} ERROR: x-xfer-style must be 'four-pass' or 'two-pass'.`;
+			xferStyle = args[0];
 		} else if (op === 'x-speed-number') {
 			if (args.length !== 1) throw `${knitoutFile}:${lineIdx+1} ERROR: x-speed-number takes one argument.`;
 			if (!/^[+-]?\d*\.?\d+$/.test(args[0])) throw `${knitoutFile}:${lineIdx+1} ERROR: x-speed-number must be a number.`;
@@ -1023,7 +1019,7 @@ function knitoutToPasses(knitout, knitoutFile) {
 			}
 
 			//make sure that this is a valid operation, and fill in proper OP:
-			const type = TYPE_XFER;
+			const type = (xferStyle === 'four-pass' ? TYPE_XFER_FOUR_PASS : TYPE_XFER_TWO_PASS);
 			const op = (n.isFront() ? OP_XFER_TO_BACK : OP_XFER_TO_FRONT);
 			d = ""; //xfer is directionless
 
@@ -1274,7 +1270,7 @@ function passesToKCode(headers, passes, kcFile) {
 			return {STIF:STIF.join(''), STIR:STIR.join('')};
 		}
 
-		if (pass.type === TYPE_XFER) {
+		if (pass.type === TYPE_XFER_FOUR_PASS || pass.type === TYPE_XFER_TWO_PASS) {
 			//this code is going to split the transfers into several passes, using this handy helper:
 			function makeXferPass(direction, fromBed, toBed, checkNeedleFn, comment) {
 				let xpass = {
@@ -1404,7 +1400,7 @@ function passesToKCode(headers, passes, kcFile) {
 				nextDirection = (nextDirection === DIRECTION_RIGHT ? DIRECTION_LEFT : DIRECTION_RIGHT);
 			}
 
-			if (false) {
+			if (pass.type == TYPE_XFER_TWO_PASS) {
 				//lazy all needles xfers:
 				makeXferPass(nextDirection, 'f', 'b', (n) => {
 					const f = frontNeedleToSlot(n);
