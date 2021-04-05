@@ -1,5 +1,5 @@
 #!/bin/sh
-':' //; exec "$(command -v nodejs || command -v node)" "$0" "$@"
+':'; //; exec "$(command -v nodejs || command -v node)" "$0" "$@"
 "use strict";
 
 //------------------------------------
@@ -207,7 +207,7 @@ function Pass(info) {
 	console.assert('racking' in this, "Can't specify a pass without a racking.");
 	console.assert('speed' in this, "Can't specify a pass without a speed value.");
 
-  //TO-DO pass sanity check
+	//TO-DO pass sanity check
 	// if (this.type === TYPE_KNIT_TUCK) {
 	// 	if ('gripper' in this) {
 	// 		console.assert(this.carriers.length !== 0, "Using GRIPPER_* with no carriers doesn't make sense.");
@@ -330,7 +330,7 @@ Pass.prototype.append = function(pass) {
 			if (s in this.slots) {
 				//TODO: can one drop both front and back with aligned racking?
 				if (merge_ops(this.slots[s], pass.slots[s], quarterPitch) === null
-				 && merge_ops(pass.slots[s], this.slots[s], quarterPitch) === null) {
+				&& merge_ops(pass.slots[s], this.slots[s], quarterPitch) === null) {
 					//no way to merge operations in the same slot
 					return false;
 				}
@@ -400,7 +400,7 @@ Pass.prototype.append = function(pass) {
 
 let carrierSpacing = 2;
 let carrierDistance = 2.5;
-let leftFloor = true, //new
+let leftFloor = true,
 	rightFloor = true;
 
 
@@ -529,6 +529,8 @@ function knitoutToPasses(knitout, knitoutFile) {
 	let speed = 100; //machine-specific speed number
 	let pausePending = false; //optional stop before next instruction, please
 	let endPending = false; //end the current pass before the next instruction, please
+
+	let pauseMessage; //message to put on screen when pausing the machine
 	
 	let roller = 100;
 	let addRoller = 0;
@@ -627,6 +629,7 @@ function knitoutToPasses(knitout, knitoutFile) {
 					};
 					if (doPause) {
 						info.pause = true;
+						info.pauseMessage = pauseMessage;
 						doPause = false;
 					}
 					info.slots[slot] = OP_SOFT_MISS;
@@ -645,6 +648,7 @@ function knitoutToPasses(knitout, knitoutFile) {
 
 				if (doPause) {
 					pass.pause = true;
+					pass.pauseMessage = pauseMessage;
 					doPause = false;
 				}
 				merge(pass, true); //should be fine, now. kicks shouldn't keep kicking...
@@ -653,6 +657,7 @@ function knitoutToPasses(knitout, knitoutFile) {
 				//if kicks aren't needed, can just append the pass:
 				if (doPause) {
 					pass.pause = true;
+					pass.pauseMessage = pauseMessage;
 					doPause = false;
 				}
 				passes.push(pass);
@@ -877,7 +882,7 @@ function knitoutToPasses(knitout, knitoutFile) {
 				direction:DIRECTION_LEFT,
 				gripper:GRIPPER_OUT,
 			};
-			if (addRoller !== 0) (roller -= addRoller), (addRoller = 0); //remove //?
+			if (addRoller !== 0) (roller -= addRoller), (addRoller = 0);
 			info.slots[slotString(n)] = OP_SOFT_MISS;
 			//TODO: probably need to figure out some special logic for bringing a carrier out
 
@@ -1068,6 +1073,7 @@ function knitoutToPasses(knitout, knitoutFile) {
 				console.warn(`${knitoutFile}:${lineIdx+1} WARNING: redundant pause instruction.`);
 			}
 			pausePending = true;
+			args.length > 0 ? pauseMessage = args.join(' ') : pauseMessage = undefined;
 		} else if (op === 'x-vis-color') {
 			//do nothing -- visualization color doesn't matter to kcode creation!
 		} else if (op.match(/^x-/)) {
@@ -1124,8 +1130,8 @@ function passesToKCode(headers, passes, kcFile) {
 		else if (headers.Position === 'Right') return 251 - maxSlot;
 		else throw "ERROR: unrecognized position header";
 	})();
-	function frontNeedleToSlot(n) { return n - slotToNeedle; }
-	function backNeedleToSlot(n, racking) { return n + Math.floor(racking) - slotToNeedle; }
+	function frontNeedleToSlot(n) { return n - slotToNeedle }
+	function backNeedleToSlot(n, racking) { return n + Math.floor(racking) - slotToNeedle }
 
 
 	//Now convert passes to 'kcode passes' by splitting xfer passes and adding any needed carriage moves:
@@ -1291,6 +1297,7 @@ function passesToKCode(headers, passes, kcFile) {
 					carriageRight:-Infinity, //will get updated
 				};
 				if (pass.comment) xpass.comment = pass.comment;
+				if (pass.pause && pass.pauseMessage) xpass.pauseMessage = pass.pauseMessage;
 				if (typeof(comment) !== 'undefined') {
 					if ('comment' in xpass) xpass.comment += ' ' + comment;
 					else xpass.comment = comment;
@@ -1462,6 +1469,7 @@ function passesToKCode(headers, passes, kcFile) {
 				roller: pass.roller,
 			};
 			if (pass.comment) kpass.comment = pass.comment; //TODO: add header for pause/alert on screen
+			if (pass.pause && pass.pauseMessage) kpass.pauseMessage = pass.pauseMessage;
 			if (pass.gripper === GRIPPER_OUT) {
 				kpass.comment = (kpass.comment || "") + "; carrier out";
 			}
@@ -1493,7 +1501,7 @@ function passesToKCode(headers, passes, kcFile) {
 							}
 						}
 						if (overlap) {
-						let bumpAdd = add;
+							let bumpAdd = add;
 							if (Math.abs(add) % 1 === 0.5) {
 								if (add < 0) {
 									leftFloor === true ? (bumpAdd = -Math.floor(-add)) : (bumpAdd = -Math.ceil(-add));
@@ -1625,6 +1633,9 @@ function passesToKCode(headers, passes, kcFile) {
 	let lastRACK = 0.0;
 	kcodePasses.forEach(function(kpass){
 		//console.log("Doing:", kpass); //DEBUG
+		if ('pauseMessage' in kpass) {
+			out(kpass.pauseMessage);
+		}
 		out("//"); out("//"); out("//"); out("//"); //why do they do this?
 		if ('comment' in kpass) {
 			out("// " + kpass.comment);
