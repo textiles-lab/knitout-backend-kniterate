@@ -141,9 +141,10 @@ const TYPE_XFER_TWO_PASS = { front:'Xf', back:'Xf' }; //will actually get split 
 
 const TYPE_SPLIT_TO_BACK = { kcode: 'Tr-Rr' }; //* //only with type knit_x (not x_knit //?)
 const TYPE_SPLIT_TO_FRONT = {kcode:'Rr-Tr'}; //*
+const TYPE_KNITFRONT_SPLIT2BACK = { kcode: 'Tr-Rr' }; //* //only with type knit_x (not x_knit //?)
+const TYPE_KNITBACK_SPLIT2FRONT = {kcode:'Rr-Tr'}; //*
 
-
-function merge_types(a,b) {
+function merge_types(a,b) { //*
 	//same type, easy to merge:
 	if (a === b) return a;
 
@@ -156,21 +157,23 @@ function merge_types(a,b) {
 		if (a !== TYPE_XFER_FOUR_PASS && a !== TYPE_XFER_TWO_PASS) return a;
 		else return null;
 	}
-	
+
 	//types that only define one bed get merged:
 	if (a === TYPE_KNIT_x) {
-		if      (b === TYPE_x_KNIT || b === TYPE_KNIT_KNIT) return TYPE_KNIT_KNIT;
+		if (b === TYPE_x_KNIT || b === TYPE_KNIT_KNIT) return TYPE_KNIT_KNIT;
 		else if (b === TYPE_x_TUCK || b === TYPE_KNIT_TUCK) return TYPE_KNIT_TUCK;
+		else if (b === TYPE_SPLIT_TO_BACK) return TYPE_KNITFRONT_SPLIT2BACK; //* //?
 	} else if (a === TYPE_x_KNIT) {
-		if      (b === TYPE_KNIT_x || b === TYPE_KNIT_KNIT) return TYPE_KNIT_KNIT;
+		if (b === TYPE_KNIT_x || b === TYPE_KNIT_KNIT) return TYPE_KNIT_KNIT;
 		else if (b === TYPE_TUCK_x || b === TYPE_TUCK_KNIT) return TYPE_TUCK_KNIT;
+		else if (b === TYPE_SPLIT_TO_FRONT) return TYPE_KNITBACK_SPLIT2FRONT; //* //?
 	} else if (a === TYPE_TUCK_x) {
 		if      (b === TYPE_x_KNIT || b === TYPE_TUCK_KNIT) return TYPE_TUCK_KNIT;
 		else if (b === TYPE_x_TUCK || b === TYPE_TUCK_TUCK) return TYPE_TUCK_TUCK;
 	} else if (a === TYPE_x_TUCK) {
 		if      (b === TYPE_KNIT_x || b === TYPE_KNIT_TUCK) return TYPE_KNIT_TUCK;
 		else if (b === TYPE_TUCK_x || b === TYPE_TUCK_TUCK) return TYPE_TUCK_TUCK;
-	} else if (a === TYPE_KNIT_KNIT) {
+	} else if (a === TYPE_KNIT_KNIT) { //* can split append to passes with knitting on both beds //?
 		if (b === TYPE_KNIT_x || b === TYPE_x_KNIT) return TYPE_KNIT_KNIT;
 	} else if (a === TYPE_KNIT_TUCK) {
 		if (b === TYPE_KNIT_x || b === TYPE_x_TUCK) return TYPE_KNIT_TUCK;
@@ -178,6 +181,10 @@ function merge_types(a,b) {
 		if (b === TYPE_TUCK_x || b === TYPE_x_KNIT) return TYPE_TUCK_KNIT;
 	} else if (a === TYPE_TUCK_TUCK) {
 		if (b === TYPE_TUCK_x || b === TYPE_x_TUCK) return TYPE_TUCK_TUCK;
+	} else if (a === TYPE_SPLIT_TO_BACK || a === TYPE_KNITFRONT_SPLIT2BACK) {
+		if (b === TYPE_SPLIT_TO_BACK || b === TYPE_KNITFRONT_SPLIT2BACK || b === TYPE_KNIT_x) return TYPE_KNITFRONT_SPLIT2BACK; //don't have to worry about a === TYPE_SPLIT_TO_BACK && b === TYPE_SPLIT_TO_BACK returning TYPE_KNITFRONT_SPLIT2BACK bc already taken care of by: if (a === b) return a;
+	} else if (a === TYPE_SPLIT_TO_FRONT || a === TYPE_KNITBACK_SPLIT2FRONT) {
+		if (b === TYPE_SPLIT_TO_FRONT || b === TYPE_KNITBACK_SPLIT2FRONT || b === TYPE_x_KNIT) return TYPE_KNITBACK_SPLIT2FRONT;
 	}
 
 	//return 'null' if no merge possible:
@@ -554,7 +561,7 @@ function knitoutToPasses(knitout, knitoutFile) {
 		return slotNumber(bn).toString();
 	}
 
-	function merge(pass, shouldNotKick) {
+	function merge(pass, shouldNotKick) { //*
 		let doPause = pausePending;
 		pausePending = false;
 		const doEnd = endPending;
