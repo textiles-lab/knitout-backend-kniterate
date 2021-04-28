@@ -80,7 +80,11 @@ const OP_MISS_FRONT_TUCK_BACK = { name:'OP_MISS_FRONT_TUCK_BACK', isBack:true };
 const OP_MISS_FRONT_MISS_BACK = { name:'OP_MISS_FRONT_MISS_BACK' };
 
 const OP_XFER_TO_BACK  = { name:'OP_XFER_TO_BACK', isFront:true };
-const OP_XFER_TO_FRONT = { name:'OP_XFER_TO_FRONT', isBack:true };
+const OP_XFER_TO_FRONT = { name: 'OP_XFER_TO_FRONT', isBack:true };
+
+// const OP_SPLIT_TO_BACK = { name:'OP_SPLIT_TO_BACK', isFront:true }; //*
+// const OP_SPLIT_TO_FRONT = { name: 'OP_SPLIT_TO_FRONT', isBack: true }; //*
+const OP_SPLIT = { name: 'OP_SPLIT', isFront:true, isBack:true };
 
 //return a combined operation that does 'a' then 'b' (moving right), or null if such a thing doesn't exist
 function merge_ops(a,b,quarterPitch) {
@@ -133,7 +137,11 @@ const TYPE_KNIT_TUCK = {kcode:'Kn-Tu'};
 const TYPE_TUCK_TUCK = {kcode:'Tu-Tu'};
 
 const TYPE_XFER_FOUR_PASS = {front:'Xf', back:'Xf'}; //will actually get split in output
-const TYPE_XFER_TWO_PASS = {front:'Xf', back:'Xf'}; //will actually get split in output
+const TYPE_XFER_TWO_PASS = { front:'Xf', back:'Xf' }; //will actually get split in output
+
+const TYPE_SPLIT_TO_BACK = { kcode: 'Tr-Rr' }; //* //only with type knit_x (not x_knit //?)
+const TYPE_SPLIT_TO_FRONT = {kcode:'Rr-Tr'}; //*
+
 
 function merge_types(a,b) {
 	//same type, easy to merge:
@@ -251,7 +259,7 @@ Pass.prototype.hasBack = function() {
 
 //'append' attempts to append a second pass to this pass.
 //NOTE: only written for passes that actually perform operations, not for adding options.
-Pass.prototype.append = function(pass) {
+Pass.prototype.append = function(pass) { //*
 
 	//---- check if merge would work ----
 
@@ -268,7 +276,7 @@ Pass.prototype.append = function(pass) {
 	}
 
 	//pass types must be merge-able:
-	if (merge_types(this.type, pass.type) === null) {
+	if (merge_types(this.type, pass.type) === null) { //*
 		return false;
 	}
 
@@ -820,7 +828,7 @@ function knitoutToPasses(knitout, knitoutFile) {
 			args.unshift('+');
 			expectNoCarriers = true;
 		} else if (op === 'xfer') {
-			op = 'split';
+			// op = 'split'; //*
 			args.unshift('+');
 			expectNoCarriers = true;
 		}
@@ -1003,7 +1011,8 @@ function knitoutToPasses(knitout, knitoutFile) {
 
 			setLast(cs, d, n);
 
-		} else if (op === 'split') {
+		} else if (op === 'xfer' || op === 'split') { //*
+		// } else if (op === 'split') { //*
 			let d = args.shift();
 			let n = new BedNeedle(args.shift());
 			let t = new BedNeedle(args.shift());
@@ -1011,9 +1020,6 @@ function knitoutToPasses(knitout, knitoutFile) {
 
 			if (expectNoCarriers && cs.length !== 0) {
 				throw "ERROR: cannot xfer with carriers (use split).";
-			}
-			if (cs.length !== 0) {
-				throw "ERROR: this machine does not support a split (with carriers) instruction.";
 			}
 
 			//make sure that 't' and 'n' align reasonably:
@@ -1029,10 +1035,17 @@ function knitoutToPasses(knitout, knitoutFile) {
 				throw "ERROR: must xfer/split front <-> back.";
 			}
 
+			if (op === 'xfer') d = ""; //xfer is directionless
 			//make sure that this is a valid operation, and fill in proper OP:
-			const type = (xferStyle === 'four-pass' ? TYPE_XFER_FOUR_PASS : TYPE_XFER_TWO_PASS);
-			const op = (n.isFront() ? OP_XFER_TO_BACK : OP_XFER_TO_FRONT);
-			d = ""; //xfer is directionless
+			const type = (op === 'xfer' ? (xferStyle === 'four-pass' ? TYPE_XFER_FOUR_PASS : TYPE_XFER_TWO_PASS) : (n.isFront() ? TYPE_SPLIT_TO_BACK : TYPE_SPLIT_TO_FRONT)); //*
+			if (op === 'xfer') {
+				op = (n.isFront() ? OP_XFER_TO_BACK : OP_XFER_TO_FRONT);
+			} else {
+				op = OP_SPLIT;
+				// op = (n.isFront() ? OP_SPLIT_TO_BACK : OP_SPLIT_TO_FRONT);
+				// if (slotString(n) === slotString(t)) op = OP_SPLIT;
+			}
+			// d = ""; //xfer is directionless
 
 			kickOthers(n,cs); //both xfer and split need carriers out of the way
 
@@ -1050,6 +1063,12 @@ function knitoutToPasses(knitout, knitoutFile) {
 			if (addRoller !== 0) (roller -= addRoller), (addRoller = 0);
 
 			info.slots[slotString(n)] = op;
+			//record slots for both target too if split: //TODO: probably remove this because slotString() always makes them equal (so just need OP split)
+			// if (op === OP_SPLIT_TO_BACK) {
+			// 	info.slots[slotString(t)] = OP_SPLIT_TO_FRONT;
+			// } else if (op === OP_SPLIT_TO_FRONT) {
+			// 	info.slots[slotString(t)] = OP_SPLIT_TO_BACK;
+			// }
 			//record stitch for both source and target locations: (not sure if this matters):
 			info.sizes[slotString(n)] = {};
 			info.sizes[slotString(t)] = {};
@@ -1068,7 +1087,7 @@ function knitoutToPasses(knitout, knitoutFile) {
 				}
 			}
 			setLast(cs, d, n);
-		} else if (op === 'pause') {
+		}else if (op === 'pause') {
 			if (pausePending) {
 				console.warn(`${knitoutFile}:${lineIdx+1} WARNING: redundant pause instruction.`);
 			}
