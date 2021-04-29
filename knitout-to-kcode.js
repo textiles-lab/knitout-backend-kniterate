@@ -1,5 +1,5 @@
 #!/bin/sh
-':'; //; exec "$(command -v nodejs || command -v node)" "$0" "$@"
+':' //; exec "$(command -v nodejs || command -v node)" "$0" "$@"
 "use strict";
 
 //------------------------------------
