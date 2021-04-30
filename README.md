@@ -79,8 +79,22 @@ node knitout-to-kcode.js test.k test.kc
 For example files (pairs of file.k [input file] and file.kc [expected output]) see the [test-files](test-files) folder.
 
 <a name="extensions"></a><b>Knitout Extension for the Kniterate</b>
-> **TODO:** add documentation on extensions & quick overview of some example knitout code with its k-code counterpart below
 
+*Kniterate-specific Knitout Extensions:*
+- `x-roller-advance D`: Sets the distance, `D`, the take-down roller will advance after each pass. (The default value is `100`).
+- `x-add-roller-advance A`: Adds an additional take-down roller advance amount, `A`, to the current pass. The effect is cumulative over multiple calls and resets every pass; thus, calling `x-roller-advance 200` `x-add-roller-advance 25` `x-add-roller-advance -75` will result in an advance of `150` after the current pass and (assuming no other calls) an advance of `200` on every pass thereafter.
+- `x-carrier-spacing N`: If a carrier would have stopped at the same location as another carrier, it will instead be moved by `N` additional needles. This value is set for all subsequent operations and will start a new pass if needed. (The default value is `2`).
+- `x-carrier-stopping-distance N`: Set carriers to stop `N` needles past the last needle they worked on a pass; `N` should end in `0.5` to reflect the fact that we think of carriers as stopping *between* needles. This value is set for all subsequent operations and will start a new pass if needed. (The default value is `2.5`).
+- `x-xfer-style`: Sets style, `S`, in which subsequent transfers are allocated to passes; `four-pass` (the default) divides even and odd front-to-back and back-to-front transfers into their own passes, which is generally more reliable; `two-pass` just divides front and back transfers into their own passes, which is required by the hardware but may be unreliable. Use `x-xfer-style two-pass` along with `x-end-pass` when you need to allocate transfers specifically to passes. This value is set for all subsequent operations and will start a new `pass` if needed.
+
+*General Knitout Extensions:*
+- `x-stitch-number N`: Sets the table index for subsequent knit and tuck operations to `N`. Valid `N` range on the Kniterate is: `0-9A-F`. (On the Kniterate, the default value is `5`).
+- `x-xfer-stitch-number N`: Like `x-stitch-number` but for subsequent transfer operations. (On the kniterate, the default value is `3`).
+- `x-speed-number N`: Sets the speed number for subsequent operations to `N`; changing speeds in the middle of a course will generally require starting a new pass and may produce kickbacks. Valid `N` range on the Kniterate is: 0-600. (On the Kniterate, the default value is `100`).
+- `x-end-pass`: Ends the current pass, even if the backend thinks it is able to add more stitches. Useful for debugging and for forcing certain machine behaviors.
+- `x-vis-color H CS`: Sets the current color of carrier set `CS` to CSS color specification `H` (generally, a 6-digit hex color like '#ff00ff'); color changes take effect on the next operation. This extension exists to help with pattern visualization in the <a href="https://textiles-lab.github.io/knitout-live-visualizer/">live visualizer</a>.
+
+> **TODO:** add quick overview of some example knitout code with its k-code counterpart below
 
 ## <a name="troubleshooting"></a>Troubleshooting
 
