@@ -82,6 +82,8 @@ const OP_MISS_FRONT_MISS_BACK = { name:'OP_MISS_FRONT_MISS_BACK' };
 const OP_XFER_TO_BACK  = { name:'OP_XFER_TO_BACK', isFront:true };
 const OP_XFER_TO_FRONT = { name:'OP_XFER_TO_FRONT', isBack:true };
 
+const OP_SPLIT = { name:'OP_SPLIT', isFront:true, isBack:true }; //the type of OP_SPLIT is determined by the type of the pass that contains it.
+
 //return a combined operation that does 'a' then 'b' (moving right), or null if such a thing doesn't exist
 function merge_ops(a,b,quarterPitch) {
 	//soft miss will always be replaced by another operation in the same slot:
@@ -135,6 +137,9 @@ const TYPE_TUCK_TUCK = {kcode:'Tu-Tu'};
 const TYPE_XFER_FOUR_PASS = {front:'Xf', back:'Xf'}; //will actually get split in output
 const TYPE_XFER_TWO_PASS = {front:'Xf', back:'Xf'}; //will actually get split in output
 
+const TYPE_SPLIT_TO_BACK = {kcode: 'Tr-Rr'};
+const TYPE_SPLIT_TO_FRONT = {kcode:'Rr-Tr'};
+
 function merge_types(a,b) {
 	//same type, easy to merge:
 	if (a === b) return a;
@@ -148,21 +153,24 @@ function merge_types(a,b) {
 		if (a !== TYPE_XFER_FOUR_PASS && a !== TYPE_XFER_TWO_PASS) return a;
 		else return null;
 	}
-	
+
 	//types that only define one bed get merged:
+	//TODO: determing whether TYPE_SPLIT_TO_BACK can be merged with TYPE_x_KNIT, or only TYPE_KNIT_x (and vice versa)
 	if (a === TYPE_KNIT_x) {
-		if      (b === TYPE_x_KNIT || b === TYPE_KNIT_KNIT) return TYPE_KNIT_KNIT;
+		if (b === TYPE_x_KNIT || b === TYPE_KNIT_KNIT) return TYPE_KNIT_KNIT;
 		else if (b === TYPE_x_TUCK || b === TYPE_KNIT_TUCK) return TYPE_KNIT_TUCK;
+		else if (b === TYPE_SPLIT_TO_BACK) return TYPE_SPLIT_TO_BACK;
 	} else if (a === TYPE_x_KNIT) {
-		if      (b === TYPE_KNIT_x || b === TYPE_KNIT_KNIT) return TYPE_KNIT_KNIT;
+		if (b === TYPE_KNIT_x || b === TYPE_KNIT_KNIT) return TYPE_KNIT_KNIT;
 		else if (b === TYPE_TUCK_x || b === TYPE_TUCK_KNIT) return TYPE_TUCK_KNIT;
+		else if (b === TYPE_SPLIT_TO_FRONT) return TYPE_SPLIT_TO_FRONT;
 	} else if (a === TYPE_TUCK_x) {
 		if      (b === TYPE_x_KNIT || b === TYPE_TUCK_KNIT) return TYPE_TUCK_KNIT;
 		else if (b === TYPE_x_TUCK || b === TYPE_TUCK_TUCK) return TYPE_TUCK_TUCK;
 	} else if (a === TYPE_x_TUCK) {
 		if      (b === TYPE_KNIT_x || b === TYPE_KNIT_TUCK) return TYPE_KNIT_TUCK;
 		else if (b === TYPE_TUCK_x || b === TYPE_TUCK_TUCK) return TYPE_TUCK_TUCK;
-	} else if (a === TYPE_KNIT_KNIT) {
+	} else if (a === TYPE_KNIT_KNIT) { //TODO: determine if split can be appended to passes with knitting on both beds
 		if (b === TYPE_KNIT_x || b === TYPE_x_KNIT) return TYPE_KNIT_KNIT;
 	} else if (a === TYPE_KNIT_TUCK) {
 		if (b === TYPE_KNIT_x || b === TYPE_x_TUCK) return TYPE_KNIT_TUCK;
@@ -170,6 +178,10 @@ function merge_types(a,b) {
 		if (b === TYPE_TUCK_x || b === TYPE_x_KNIT) return TYPE_TUCK_KNIT;
 	} else if (a === TYPE_TUCK_TUCK) {
 		if (b === TYPE_TUCK_x || b === TYPE_x_TUCK) return TYPE_TUCK_TUCK;
+	} else if (a === TYPE_SPLIT_TO_BACK) {
+		if (b === TYPE_SPLIT_TO_BACK || b === TYPE_KNIT_x) return TYPE_SPLIT_TO_BACK;
+	} else if (a === TYPE_SPLIT_TO_FRONT) {
+		if (b === TYPE_SPLIT_TO_FRONT || b === TYPE_x_KNIT) return TYPE_SPLIT_TO_FRONT;
 	}
 
 	//return 'null' if no merge possible:
@@ -1012,9 +1024,6 @@ function knitoutToPasses(knitout, knitoutFile) {
 			if (expectNoCarriers && cs.length !== 0) {
 				throw "ERROR: cannot xfer with carriers (use split).";
 			}
-			if (cs.length !== 0) {
-				throw "ERROR: this machine does not support a split (with carriers) instruction.";
-			}
 
 			//make sure that 't' and 'n' align reasonably:
 			if (n.isBack() && t.isFront()) {
@@ -1030,9 +1039,15 @@ function knitoutToPasses(knitout, knitoutFile) {
 			}
 
 			//make sure that this is a valid operation, and fill in proper OP:
-			const type = (xferStyle === 'four-pass' ? TYPE_XFER_FOUR_PASS : TYPE_XFER_TWO_PASS);
-			const op = (n.isFront() ? OP_XFER_TO_BACK : OP_XFER_TO_FRONT);
-			d = ""; //xfer is directionless
+			let type;
+			if (cs.length !== 0) { //split case
+				type = (n.isFront() ? TYPE_SPLIT_TO_BACK : TYPE_SPLIT_TO_FRONT);
+				op = OP_SPLIT;
+			} else { //xfer case
+				d = ""; //xfer is directionless
+				type = (xferStyle === 'four-pass' ? TYPE_XFER_FOUR_PASS : TYPE_XFER_TWO_PASS);
+				op = (n.isFront() ? OP_XFER_TO_BACK : OP_XFER_TO_FRONT);
+			}
 
 			kickOthers(n,cs); //both xfer and split need carriers out of the way
 
@@ -1050,6 +1065,7 @@ function knitoutToPasses(knitout, knitoutFile) {
 			if (addRoller !== 0) (roller -= addRoller), (addRoller = 0);
 
 			info.slots[slotString(n)] = op;
+
 			//record stitch for both source and target locations: (not sure if this matters):
 			info.sizes[slotString(n)] = {};
 			info.sizes[slotString(t)] = {};
@@ -1130,8 +1146,8 @@ function passesToKCode(headers, passes, kcFile) {
 		else if (headers.Position === 'Right') return 251 - maxSlot;
 		else throw "ERROR: unrecognized position header";
 	})();
-	function frontNeedleToSlot(n) { return n - slotToNeedle }
-	function backNeedleToSlot(n, racking) { return n + Math.floor(racking) - slotToNeedle }
+	function frontNeedleToSlot(n) { return n - slotToNeedle; }
+	function backNeedleToSlot(n, racking) { return n + Math.floor(racking) - slotToNeedle; }
 
 
 	//Now convert passes to 'kcode passes' by splitting xfer passes and adding any needed carriage moves:
