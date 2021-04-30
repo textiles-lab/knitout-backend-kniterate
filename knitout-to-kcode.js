@@ -82,7 +82,7 @@ const OP_MISS_FRONT_MISS_BACK = { name:'OP_MISS_FRONT_MISS_BACK' };
 const OP_XFER_TO_BACK  = { name:'OP_XFER_TO_BACK', isFront:true };
 const OP_XFER_TO_FRONT = { name:'OP_XFER_TO_FRONT', isBack:true };
 
-const OP_SPLIT = { name:'OP_SPLIT', isFront:true, isBack:true };
+const OP_SPLIT = { name:'OP_SPLIT', isFront:true, isBack:true }; //the type of OP_SPLIT is determined by the type of the pass that contains it.
 
 //return a combined operation that does 'a' then 'b' (moving right), or null if such a thing doesn't exist
 function merge_ops(a,b,quarterPitch) {
@@ -178,10 +178,10 @@ function merge_types(a,b) {
 		if (b === TYPE_TUCK_x || b === TYPE_x_KNIT) return TYPE_TUCK_KNIT;
 	} else if (a === TYPE_TUCK_TUCK) {
 		if (b === TYPE_TUCK_x || b === TYPE_x_TUCK) return TYPE_TUCK_TUCK;
-	} else if (a === TYPE_SPLIT_TO_BACK || a === TYPE_SPLIT_TO_BACK) {
-		if (b === TYPE_SPLIT_TO_BACK || b === TYPE_SPLIT_TO_BACK || b === TYPE_KNIT_x) return TYPE_SPLIT_TO_BACK; //NOTE: don't have to worry about a === TYPE_SPLIT_TO_BACK && b === TYPE_SPLIT_TO_BACK returning TYPE_SPLIT_TO_BACK bc already taken care of by: if (a === b) return a;
-	} else if (a === TYPE_SPLIT_TO_FRONT || a === TYPE_SPLIT_TO_FRONT) {
-		if (b === TYPE_SPLIT_TO_FRONT || b === TYPE_SPLIT_TO_FRONT || b === TYPE_x_KNIT) return TYPE_SPLIT_TO_FRONT;
+	} else if (a === TYPE_SPLIT_TO_BACK) {
+		if (b === TYPE_SPLIT_TO_BACK || b === TYPE_KNIT_x) return TYPE_SPLIT_TO_BACK;
+	} else if (a === TYPE_SPLIT_TO_FRONT) {
+		if (b === TYPE_SPLIT_TO_FRONT || b === TYPE_x_KNIT) return TYPE_SPLIT_TO_FRONT;
 	}
 
 	//return 'null' if no merge possible:
@@ -832,7 +832,7 @@ function knitoutToPasses(knitout, knitoutFile) {
 			args.unshift('+');
 			expectNoCarriers = true;
 		} else if (op === 'xfer') {
-			op = 'split'; //*
+			op = 'split';
 			args.unshift('+');
 			expectNoCarriers = true;
 		}
