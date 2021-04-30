@@ -6,7 +6,7 @@ For converting knitout to k-code so that the operations can run on a Kniterate m
 K-code (.kc) is the file format used for [Kniterate](https://www.kniterate.com/) knitting machines.
 
 <table>
-<tr><td><a href="#browser">Running in Browser</a></td><td><a href="#local">Running Locally</a></td><td><a href="#example-code">Example Code</a></td><td><a href="#troubleshooting">Troubleshooting</a></td><td><a href="#resources">Additional Resources</a></td></tr>
+<tr><td><a href="#browser">Running in Browser</a></td><td><a href="#local">Running Locally</a></td><td><a href="#example-code">Example Code/Knitout Specifications</a></td><td><a href="#troubleshooting">Troubleshooting</a></td><td><a href="#resources">Additional Resources</a></td></tr>
 </table>
 
 ## <a name="browser"></a>Running in Browser
@@ -74,11 +74,13 @@ node knitout-to-kcode.js test.k test.kc
 ```
 4. The output k-code file will be saved to the working directory.
 
-## <a name="example-code"></a>Example Code
-
-> **TODO:** add documentation on extensions & quick overview of some example knitout code with its k-code counterpart below
+## <a name="example-code"></a>Example Code/Knitout Specifications
 
 For example files (pairs of file.k [input file] and file.kc [expected output]) see the [test-files](test-files) folder.
+
+<a name="extensions"></a><b>Knitout Extension for the Kniterate</b>
+> **TODO:** add documentation on extensions & quick overview of some example knitout code with its k-code counterpart below
+
 
 ## <a name="troubleshooting"></a>Troubleshooting
 
@@ -88,4 +90,39 @@ This program is currently in somewhat of a 'beta-testing' stage, so we anticipat
 
 <b>Live Visualizer</b>
 
-You can use the [knitout live visualizer](https://textiles-lab.github.io/knitout-live-visualizer/) to see a virtual depiction of your knit before running it on the machine (+ live coding support).
+You can use the [knitout live visualizer](https://textiles-lab.github.io/knitout-live-visualizer/) to see a virtual depiction of your knit before running it on the machine (+ live coding support!).
+
+<b>Extras</b>
+
+Some small, additional programs that help with knitout-kniterate related tasks can be found in the [extras](extras) folder. (*note:* the extras run *separately* from the backend, but the steps for usage are similar [running node along with an input file]). These programs take in a knitout file and output a knitout file as well, so the code they produce is meant to be converted to k-code using the knitout-to-kniterate.js backend before running it on the machine.
+
+So far, here are the 'extras' and how to use them:
+
+1. [waste-section.js](extras/waste-section.js)\
+*Description & Usage:*\
+Writing out all of the code to produce a waste section is pretty tedious (but also important!), so this program was created to output a customized waste section in knitout automatically (all you have to do is answer a few prompts).
+If you are unfamiliar with the purpose of waste sections—the main idea is that, since kniterate machines only have rollers for their take-down mechanism, there is nothing holding your fabric down until the rollers are engaged (which requires a few inches of waste fabric [~70 rows, although this may need to be adjusted if your yarn is particularly thin]). That way, you won't have to worry about dropped stitches/tangled yarn in the actual piece your knitting, and can detatch the waste section when the piece is finished by pulling a draw thread.
+- open your terminal and `cd` into the directory where `waste-section.js` lives (`some/path/knitout-backend-kniterate/extras`, if you cloned the repo with the default names/didn't move the file).
+- run the command: `node waste-section.js`
+- answer the following prompts, pressing the `Enter` key with no input to  (note that this program uses the [readline](https://nodejs.org/api/readline.html) module [which comes built-in with [node](https://nodejs.org/)])
+  - 1: Enter the path to the file you'd like to add a waste section to (or press the 'Enter' key with no input the create a waste section without a file)
+    - if you opted to create a waste section without a file, enter the minimum and the maximum needle numbers that will be in the first row of the piece you plan to append to the waste section.
+  - 2: Enter the values you'd like to assign to the knitout <a href="#extensions">extensions</a> used with the kniterate, as well as the carriers you'd like to use for the waste section and the draw thread (press the 'Enter' key with no input to use the respective default value for any of the prompts)
+  - 3: Enter the cast-on style you'd like to use—with the option of entering `0` if the input file already contains a cast-on, and then the carrier to use for the cast-on (again, 'Enter' for the default value)
+  - 4: Finally, enter the filename you'd like to give the output knitout file, and then check it out!
+2. [knitout-alter-kniterate.js](extras/knitout-alter-kniterate.js)\
+*Description & Usage:*\
+You might come across a nifty knitout file you'd like to test out (maybe in the [knitout-examples](https://github.com/textiles-lab/knitout-examples) repo, which has a lot of great pre-made knitout files), but if was written for a different machine (chances are, the Shima Seiki SWG series), you'll need to change some things around to make it work on the kniterate. That's where `knitout-alter-kniterate.js` comes in handy! Run this program to automatically change any existing extensions/operations in the file to kniterate-friendly values (and make sure to add on a waste section with [waste-section.js](extras/waste-section.js), if it doesn't already exist). Also, if you want to change any of the carriers used in a particular file to different ones for whatever reason, you can use this program to do that too!
+- Just like the program above, open a terminal, `cd` into the directory that contains `knitout-alter-kniterate.js`, and run: `node knitout-alter-kniterate.js`
+- Then, answer the following prompts to configure the file (just like the program above too).
+3. [half-gauge.js](extras/half-gauge.js)\
+*Description & Usage:*\
+This program converts full-gauge knitout to half-gauge! Although the kniterate machine doesn't have sliders (a cool feature on the Shima Seiki SWG machines), you can still write knitout that uses them (note that sliders are signified by adding an `s` to the bed parameter in knitout, e.g. `xfer fs1 bs1`), and then run it in `half-gauge.js` to emulate sliders with the empty needles that result from half-gauging.
+- Open a terminal, `cd` into the directory that contains `knitout-alter-kniterate.js`, and run: `node half-gauge.js <in-file> <out-file>` (with `<in-file>` being the path to the knitout file you'd like to convert to half-gauge, and `<out-file>` being the filename you'd like to use for the output half-gauged file).
+4. [autoknit-kniterate.js](extras/autoknit-kniterate.js)\
+*Description & Usage:*\
+You may have come across [autoknit](https://github.com/textiles-lab/autoknit), an exciting project by the Textiles Lab that converts 3D meshes to knitout. As of now, autoknit doesn't play too nicely with the kniterate, since the kniterate is lacking some features that make 3D-knitting a bit difficult (e.g. high-level take-down mechanisms [sinkers], consistently reliable transfer-mechanisms [sliders], etc.). With the hope of some day figuring it out, `autoknit-kniterate.js` was created so that autoknit can at least produce files that will safely run on the kniterate (although your [cactus](https://github.com/textiles-lab/autoknit-tests/blob/master/models/misc-cactus.obj) will likely resemble a pile of yarn more than it will the real thing).
+- move `autoknit-kniterate.js` into the [node_modules](https://github.com/textiles-lab/autoknit/tree/master/node_modules) folder within autoknit, and once you've gotten to the step where you've produced a javascript file, open that js file in a text-editor and change this line of code [line #1]: `const autoknit = require(autoknit);` to this: `const autoknit = require(autoknit-kniterate);`—and that's it! Just carry on with the rest of the autoknit usage steps.
+- See the [autoknit README](https://github.com/textiles-lab/autoknit/blob/master/README.md) for more information about autoknit usage.
+
+The 'extras' are a work-in-progress compilation of resources to expand the possibilities for using knitout with the kniterate machine, so if you have any knitout-kniterate programs/assets that you'd like to contribute, please feel free to submit a pull-request!
