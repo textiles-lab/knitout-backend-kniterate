@@ -4,3 +4,4 @@ extras/*.k
 extras/*.kc
 extras/*.html
 extras/*.css
+extras/test.js

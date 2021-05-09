@@ -11,7 +11,8 @@ const rl = readline.createInterface({
 	output: process.stdout,
 });
 
-let inFile, outFile, file, lines;
+let inFile, outFile, file, header;
+let lines = [];
 let defaultRollerAdvance = 400, defaultStitchNumber = 6, defaultSpeedNumber = 300;
 let defaultWasteCarrier = '1', defaultDrawCarrier = '2', defaultCastonCarrier = '1';
 let defaultCastonStyle = 1;
@@ -22,7 +23,7 @@ let castonStyle;
 
 let minN, maxN, wasteMin, wasteMax;
 let width, wastePasses = 70;
-let carriers = [];
+let carriers = [], inCarriers = [];
 
 // Create a promise based version of rl.question so we can use it in async functions
 const question = (str) => new Promise(resolve => rl.question(str, resolve));
@@ -37,7 +38,7 @@ const steps = {
 			maxN = await question(`Max needle number: `);
 			maxN = Number(maxN);
 		}
-		console.log(`ROLLER ADVANCE: 400\nSTITCH NUMBER: 6\nSPEED NUMBER: 300\nWASTE YARN CARRIER: 1\nDRAW THREAD CARRIER: 2\nCAST-ON STYLE: closed tube\nCAST-ON CARRIER: 1`);
+		console.log(`\nROLLER ADVANCE: 400\nSTITCH NUMBER: 6\nSPEED NUMBER: 300\nWASTE YARN CARRIER: 1\nDRAW THREAD CARRIER: 2\nCAST-ON STYLE: closed tube\nCAST-ON CARRIER: 1`);
 		console.log(`\n^ **press Enter to skip any of the following prompts & use the respective default extension value (listed above) for the waste section**`);
 		console.log(`\nSETTINGS FOR WASTE SECTION:`);
 		return steps.rollerAdvance();
@@ -76,48 +77,58 @@ const steps = {
 		} else castonStyle = defaultCastonStyle;
 		if (castonStyle === 0) return steps.readFile();
 		else return steps.castonCarrier();
-		// return steps.width();
 	},
 	castonCarrier: async () => {
 		castonCarrier = await question(`Carrier to use for cast-on: `);
 		if (!castonCarrier) castonCarrier = defaultCastonCarrier;
 		if (!carriers.includes(castonCarrier)) carriers.push(castonCarrier);
-		return steps.readFile();
+		if (inFile) return steps.readFile();
+		else {
+			let additionalCarriers = await question(`If you will be using any other carriers besides those designated for waste yarn: ${wasteCarrier}, draw thread: ${drawCarrier}, and cast-on: ${castonCarrier}, please list them, separated by spaces (e.g. 1 2 3). Otherwise, just press Enter. `);
+			if (additionalCarriers) {
+				additionalCarriers = additionalCarriers.trim().split(' ');
+				for (let c in additionalCarriers) if (!carriers.includes(additionalCarriers[c])) carriers.push(additionalCarriers[c]);
+			}
+			return steps.parse();
+		}
 	},
 	readFile: async () => {
 		file = fs.readFileSync(inFile, { encoding: 'utf8'});
 		return steps.parse();
 	},
 	parse: async () => {
-		lines = file.split('\n');
 		let wasteSection = [`x-roller-advance ${rollerAdvance}`, `x-stitch-number ${stitchNumber}`, `x-speed-number ${speedNumber}`];
 		let inWasteC = false, inDrawC = false, inCastonC = false;
-		let header = lines.splice(0, lines.findIndex(ln => ln.split(' ')[0] === 'in'));
-		let inCarrier = lines[0].split(' ')[1].charAt(0);
-		lines.shift();
-		if (inCarrier === wasteCarrier) {
-			inWasteC = true;
-		}
-		if (inCarrier === drawCarrier) inDrawC = true;
-		if (castonStyle === 0 || inCarrier === castonCarrier) inCastonC = true;
-		// if (castonStyle !== 0 || inWasteC || inDrawC) lines.shift();
-		let inCarriers = [inCarrier];
 		let negCarriers = [];
-		lines.map((ln, idx) => {
-				
-			let info = ln.trim().split(' ');
-			if (info[0] === 'in' && info.length > 1) {
-				let c = info[1].charAt(0);
-				if (!inCarriers.includes(c)) {
-					lines.splice(idx, 1);
-					inCarriers.push(c);
-					if (!carriers.includes(c)) carrier.push(c);
-				}
+		if (file) {
+			lines = file.split('\n');
+			header = lines.splice(0, lines.findIndex(ln => ln.split(' ')[0] === 'in'));
+			let inCarrier = lines[0].split(' ')[1].charAt(0); //let //?
+			lines.shift();
+			if (inCarrier === wasteCarrier) {
+				inWasteC = true;
 			}
-		});
+			if (inCarrier === drawCarrier) inDrawC = true;
+			if (castonStyle === 0 || inCarrier === castonCarrier) inCastonC = true;
+			inCarriers = [inCarrier];
+			lines.map((ln, idx) => {
+				let info = ln.trim().split(' ');
+				if (info[0] === 'in' && info.length > 1) {
+					let c = info[1].charAt(0);
+					if (!inCarriers.includes(c)) {
+						lines.splice(idx, 1);
+						inCarriers.push(c);
+						if (!carriers.includes(c)) carriers.push(c);
+					}
+				}
+			});
+		} else {
+			// let carrierList = (machine.toLowerCase() === 'kniterate' ? '1 2 3 4 5 6' : '1 2 3 4 5 6 7 8 9 10'); //for now, assume machine is kniterate since SWGs don't *need* a waste section	
+			header = [';!knitout-2', `;;Machine: Kniterate`, `;;Carriers: 1 2 3 4 5 6`];
+		}
 		let otherCarriers = carriers.filter(c => c !== wasteCarrier && c !== drawCarrier && c !== castonCarrier);
 		let wasteDir = '-', drawDir = '+', castonDir = '+';
-		if (inCarriers.includes(castonCarrier)) {
+		if (inCarriers.includes(castonCarrier)) { //empty if !file, so will skip
 			for (let i = 0; i < lines.length; ++i) {
 				let info = lines[i].trim().split(' ');
 				if (info.length > 1 && !info[0].includes(';')) {
@@ -177,7 +188,7 @@ const steps = {
 				}
 			}
 		}
-		if (otherCarriers.length) {
+		if (lines && otherCarriers.length) {
 			for (let c = 0; c < otherCarriers.length; ++c) {
 				for (let i = 0; i < lines.length; ++i) {
 					let info = lines[i].trim().split(' ');
@@ -193,34 +204,37 @@ const steps = {
 			}
 		}
 
-		let dir, carrier, rack;
-		for (let i = 0; i < lines.length; ++i) {
-			let info = lines[i].trim().split(' ');
-			if (info[0].charAt(0) !== ';' && info.length > 1) {
-				if (info[0] === 'rack') {
-					if (!rack || !dir) rack = info[1].charAt(0);
-					else if (rack !== info[1].charAt(0)) break;
-				}
-				else if (info[1] === '+' || info[1] === '-') {
-					if (!dir) {
-						dir = info[1];
-						minN = maxN = Number(info[2].charAt(1));
-						carrier = info[info.length - 1];
-					} else {
-						if (info[1] === dir && info[info.length - 1] === carrier) {
-							let needle = Number(info[2].charAt(1));
-							if (needle < minN) {
-								if (dir === '-') minN = needle;
-								else break;
-							} else if (needle > maxN) {
-								if (dir === '+') maxN = needle;
-								else break;
-							}
-						} else break;
+		if (file) {
+			let dir, carrier, rack;
+			for (let i = 0; i < lines.length; ++i) {
+				let info = lines[i].trim().split(' ');
+				if (info[0].charAt(0) !== ';' && info.length > 1) {
+					if (info[0] === 'rack') {
+						if (!rack || !dir) rack = info[1].charAt(0);
+						else if (rack !== info[1].charAt(0)) break;
+					}
+					else if (info[1] === '+' || info[1] === '-') {
+						if (!dir) {
+							dir = info[1];
+							minN = maxN = Number(info[2].charAt(1));
+							carrier = info[info.length - 1];
+						} else {
+							if (info[1] === dir && info[info.length - 1] === carrier) {
+								let needle = Number(info[2].charAt(1));
+								if (needle < minN) {
+									if (dir === '-') minN = needle;
+									else break;
+								} else if (needle > maxN) {
+									if (dir === '+') maxN = needle;
+									else break;
+								}
+							} else break;
+						}
 					}
 				}
 			}
 		}
+
 		width = maxN - minN + 1;
 		if (width < 20) {
 			minN >= (20 - width) ? ((wasteMin = minN - (20 - width)), (wasteMax = max)) : ((wasteMin = minN), (wasteMax = maxN + (20-width)));
