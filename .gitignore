@@ -1,6 +1,7 @@
 /*.k
 /*.kc
 extras/*.k
+extras/*.knitout
 extras/*.kc
 extras/*.html
 extras/*.css

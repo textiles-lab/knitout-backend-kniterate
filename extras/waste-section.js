@@ -103,7 +103,7 @@ const steps = {
 		if (file) {
 			lines = file.split('\n');
 			header = lines.splice(0, lines.findIndex(ln => ln.split(' ')[0] === 'in'));
-			let inCarrier = lines[0].split(' ')[1].charAt(0); //let //?
+			let inCarrier = lines[0].split(' ')[1].charAt(0); //note: charAt is fine here since kniterate only has single-digit carriers //TODO: change if make waste-section.js for SWG too
 			lines.shift();
 			if (inCarrier === wasteCarrier) {
 				inWasteC = true;
@@ -204,31 +204,52 @@ const steps = {
 			}
 		}
 
+		let removeComment = (str) => {
+			if (str.includes(';')) return str.slice(0, str.indexOf(';'));
+			else return str;
+		};
+
 		if (file) {
 			let dir, carrier, rack;
-			for (let i = 0; i < lines.length; ++i) {
+			findMinMax: for (let i = 0; i < lines.length; ++i) {
 				let info = lines[i].trim().split(' ');
 				if (info[0].charAt(0) !== ';' && info.length > 1) {
 					if (info[0] === 'rack') {
-						if (!rack || !dir) rack = info[1].charAt(0);
-						else if (rack !== info[1].charAt(0)) break;
-					}
-					else if (info[1] === '+' || info[1] === '-') {
+						if (!rack || !dir) rack = removeComment(info[1]);
+						else if (rack !== info[1].charAt(0)) break findMinMax;
+					} else if (info[1] === '+' || info[1] === '-') {
 						if (!dir) {
 							dir = info[1];
-							minN = maxN = Number(info[2].charAt(1));
+							minN = maxN = Number(removeComment(info[2].slice(1)));
 							carrier = info[info.length - 1];
 						} else {
-							if (info[1] === dir && info[info.length - 1] === carrier) {
-								let needle = Number(info[2].charAt(1));
+							if (info[1] === dir && removeComment(info[info.length - 1]) === carrier) {
+								let needle = Number(removeComment(info[2].slice(1)));
 								if (needle < minN) {
 									if (dir === '-') minN = needle;
-									else break;
+									else break findMinMax;
 								} else if (needle > maxN) {
 									if (dir === '+') maxN = needle;
-									else break;
+									else break findMinMax;
+								} 
+							} else { // break findMinMax; //remove
+								if (castonStyle !== 0 || removeComment(info[info.length - 1]) !== carrier) break findMinMax;
+								else {
+									for (let m = i; m < lines.length; ++m) {
+										info = lines[m].trim().split(' ');
+										if (info.length > 2) {
+											let needle = Number(removeComment(info[2].slice(1)));
+											if (info[1] === '+' || info[1] === '-') { 
+												if (info[1] === dir || removeComment(info[info.length - 1]) !== carrier) break findMinMax;
+												else {
+													if (needle < minN) minN = needle;
+													if (needle > maxN) maxN = needle;
+												}
+											}
+										}
+									}
 								}
-							} else break;
+							}
 						}
 					}
 				}
@@ -250,25 +271,31 @@ const steps = {
 			wasteSection.push(`in ${carriers[i]}`);
 			let bed = 'f';
 			for (let n = wasteMin; n <= wasteMax; ++n) {
-				if (n % carriers.length === i) {
+				if (Math.abs(n) % carriers.length === i) {
 					wasteSection.push(`tuck + ${bed}${n} ${carriers[i]}`);
 					bed === 'f' ? bed = 'b' : bed = 'f';
+				} else {
+					if (n === wasteMax) wasteSection.push(`miss + ${bed}${n} ${carriers[i]}`);
 				}
 				if (i === 0) if (n < minN || n > maxN) toDrop.push(n);
 			}
 			bed = 'b';
 			for (let n = wasteMax; n >= wasteMin; --n) {
-				if (n % carriers.length === i) {
+				if (Math.abs(n) % carriers.length === i) {
 					wasteSection.push(`tuck - ${bed}${n} ${carriers[i]}`);
 					bed === 'f' ? bed = 'b' : bed = 'f';
+				} else {
+					if (n === wasteMin) wasteSection.push(`miss - ${bed}${n} ${carriers[i]}`);
 				}
 			}
 			if (negCarriers.includes(carriers[i])) {
 				let bed = 'f';
 				for (let n = wasteMin; n <= wasteMax; ++n) {
-					if (n % carriers.length === i) {
+					if (Math.abs(n) % carriers.length === i) {
 						wasteSection.push(`tuck + ${bed}${n} ${carriers[i]}`);
 						bed === 'f' ? bed = 'b' : bed = 'f';
+					} else {
+						if (n === wasteMax) wasteSection.push(`miss + ${bed}${n} ${carriers[i]}`);
 					}
 					if (i === 0) if (n < minN || n > maxN) toDrop.push(n);
 				}
@@ -339,6 +366,7 @@ const steps = {
 		}
 
 		if (castonStyle !== 0) {
+			wasteSection.push(`;cast-on`);
 			if (castonStyle === 1) {
 				wasteSection.push('rack 0.25'); // or 0.5 ? (visualizer)
 				if (castonDir === '+') {

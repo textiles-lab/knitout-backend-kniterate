@@ -78,7 +78,10 @@ const steps = {
 		for (let line in lines) {
 			if (lines[line] === '') continue;
 			let info = lines[line].split(' ');
-			if (info[0] === 'in' || info[0] === 'inhook') {
+			if (info[0].charAt(0) === ';' && info[0].charAt(1) === ';') {
+				if (info[0] === ';;Carriers:') lines[line] = ';;Carriers: 1 2 3 4 5 6';
+				else if (info[0] === ';;Machine:') lines[line] = ';;Machine: Kniterate';
+			} else if (info[0] === 'in' || info[0] === 'inhook') {
 				if (!carriers.includes(info[1])) carriers.push(info[1]);
 				if (info[0] === 'inhook') {
 					lines[line] = `in ${info[1]}`;
@@ -91,7 +94,7 @@ const steps = {
 			} else if (info[0] === 'x-stitch-number') {
 				xStitch = true;
 				if (stitchNumber) lines[line] = `x-stitch-number ${stitchNumber}`;
-				else defaultStitchNumber = chopOffComment(info[1]); //TODO: determine if this should be redefined...
+				else defaultStitchNumber = chopOffComment(info[1]);
 			} else if (info[0] === 'x-speed-number') {
 				xSpeed = true;
 				if (speedNumber) lines[line] = `x-speed-number ${speedNumber}`;
@@ -112,7 +115,7 @@ const steps = {
 				replacementLine += `${lines[line]}`;
 				lines[line] = replacementLine;
 				xfer = true;
-			}
+			} else if (info[0] === 'x-presser-mode') lines[line] = '';
 			//
 			if (xfer && info[0] !== 'xfer' && info[0] !== 'rack' && info[0].charAt(0) !== ';') {
 				let replacementLine = '';
