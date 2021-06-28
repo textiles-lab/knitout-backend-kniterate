@@ -98,18 +98,12 @@ const steps = {
 	},
 	parse: async () => {
 		let wasteSection = [`x-roller-advance ${rollerAdvance}`, `x-stitch-number ${stitchNumber}`, `x-speed-number ${speedNumber}`];
-		let inWasteC = false, inDrawC = false, inCastonC = false;
-		let negCarriers = [];
+		let negCarriers = [], outCarriers = [];
 		if (file) {
 			lines = file.split('\n');
 			header = lines.splice(0, lines.findIndex(ln => ln.split(' ')[0] === 'in'));
 			let inCarrier = lines[0].split(' ')[1].charAt(0); //note: charAt is fine here since kniterate only has single-digit carriers //TODO: change if make waste-section.js for SWG too
 			lines.shift();
-			if (inCarrier === wasteCarrier) {
-				inWasteC = true;
-			}
-			if (inCarrier === drawCarrier) inDrawC = true;
-			if (castonStyle === 0 || inCarrier === castonCarrier) inCastonC = true;
 			inCarriers = [inCarrier];
 			lines.map((ln, idx) => {
 				let info = ln.trim().split(' ');
@@ -127,14 +121,13 @@ const steps = {
 			header = [';!knitout-2', `;;Machine: Kniterate`, `;;Carriers: 1 2 3 4 5 6`];
 		}
 		let otherCarriers = carriers.filter(c => c !== wasteCarrier && c !== drawCarrier && c !== castonCarrier);
-		let wasteDir = '-', drawDir = '+', castonDir = '+';
+		let wasteDir = '-', drawDir = '-', castonDir = '-';
 		if (inCarriers.includes(castonCarrier)) { //empty if !file, so will skip
 			for (let i = 0; i < lines.length; ++i) {
 				let info = lines[i].trim().split(' ');
 				if (info.length > 1 && !info[0].includes(';')) {
 					if (info[info.length - 1] === castonCarrier) {
 						if (info[1] === '+') {
-							if (castonCarrier !== wasteCarrier) negCarriers.push(castonCarrier);
 							castonDir = '-';
 							break;
 						} else if (info[1] === '-') {
@@ -154,7 +147,6 @@ const steps = {
 					if (info.length > 1 && !info[0].includes(';')) {
 						if (info[info.length - 1] === drawCarrier) {
 							if (info[1] === '+') {
-								if (drawCarrier !== wasteCarrier) negCarriers.push(drawCarrier);
 								drawDir = '-';
 								break;
 							} else if (info[1] === '-') {
@@ -188,6 +180,10 @@ const steps = {
 				}
 			}
 		}
+
+		if (drawDir === '-' && drawCarrier !== wasteCarrier) negCarriers.push(drawCarrier);
+		if (castonDir === '-' && castonCarrier !== wasteCarrier && castonCarrier !== drawCarrier) negCarriers.push(castonCarrier);
+
 		if (lines && otherCarriers.length) {
 			for (let c = 0; c < otherCarriers.length; ++c) {
 				for (let i = 0; i < lines.length; ++i) {
@@ -232,7 +228,7 @@ const steps = {
 									if (dir === '+') maxN = needle;
 									else break findMinMax;
 								} 
-							} else { // break findMinMax; //remove
+							} else {
 								if (castonStyle !== 0 || removeComment(info[info.length - 1]) !== carrier) break findMinMax;
 								else {
 									for (let m = i; m < lines.length; ++m) {
@@ -340,6 +336,13 @@ const steps = {
 				wasteSection.push(`knit + f${n} ${wasteCarrier}`);
 			}
 		}
+		if (!inCarriers.includes(wasteCarrier) && wasteCarrier !== drawCarrier && wasteCarrier !== castonCarrier) {
+			if (wasteDir === '-') wasteSection.push(`out ${wasteCarrier}`); //*
+			else {
+				wasteSection.push(`miss + f${maxN + 4} ${wasteCarrier}`);
+				outCarriers.push(wasteCarrier);
+			}
+		}
 
 		// drop any extra needles if width < 20
 		if (toDrop.length) {
@@ -364,6 +367,13 @@ const steps = {
 				wasteSection.push(`knit - f${n} ${drawCarrier}`);
 			}
 		}
+		if (!inCarriers.includes(drawCarrier) && drawCarrier !== castonCarrier) {
+			if (drawDir === '-') wasteSection.push(`out ${drawCarrier}`); //*
+			else {
+				wasteSection.push(`miss + f${maxN + 4} ${drawCarrier}`);
+				outCarriers.push(drawCarrier);
+			}
+		}
 
 		if (castonStyle !== 0) {
 			wasteSection.push(`;cast-on`);
@@ -381,6 +391,19 @@ const steps = {
 				wasteSection.push(`rack 0`);
 			} else {
 				console.warn('//TODO: add support for other cast-on styles.');
+			}
+			if (!inCarriers.includes(castonCarrier)) {
+				if (castonDir === '-') wasteSection.push(`out ${castonCarrier}`); //*
+				else {
+					wasteSection.push(`miss + f${maxN + 4} ${castonCarrier}`);
+					outCarriers.push(castonCarrier);
+				}
+			}
+		}
+
+		if (outCarriers.length) {
+			for (let i = 0; i < outCarriers.length; ++i) {
+				wasteSection.push(`out ${outCarriers[i]}`);
 			}
 		}
 

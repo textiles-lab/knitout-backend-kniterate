@@ -6,3 +6,5 @@ extras/*.kc
 extras/*.html
 extras/*.css
 extras/test.js
+in-k/
+out-kc/

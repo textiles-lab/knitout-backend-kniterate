@@ -137,8 +137,10 @@ const TYPE_TUCK_TUCK = {kcode:'Tu-Tu'};
 const TYPE_XFER_FOUR_PASS = {front:'Xf', back:'Xf'}; //will actually get split in output
 const TYPE_XFER_TWO_PASS = {front:'Xf', back:'Xf'}; //will actually get split in output
 
-const TYPE_SPLIT_TO_BACK = {kcode: 'Tr-Rr'};
-const TYPE_SPLIT_TO_FRONT = {kcode:'Rr-Tr'};
+const TYPE_SPLIT_TO_BACK_NEG = {kcode: 'Tr-Rl'};
+const TYPE_SPLIT_TO_BACK_POS = {kcode: 'Tr-Rr'};
+const TYPE_SPLIT_TO_FRONT_NEG = {kcode:'Rl-Tr'};
+const TYPE_SPLIT_TO_FRONT_POS = {kcode:'Rr-Tr'};
 
 function merge_types(a,b) {
 	//same type, easy to merge:
@@ -159,11 +161,13 @@ function merge_types(a,b) {
 	if (a === TYPE_KNIT_x) {
 		if (b === TYPE_x_KNIT || b === TYPE_KNIT_KNIT) return TYPE_KNIT_KNIT;
 		else if (b === TYPE_x_TUCK || b === TYPE_KNIT_TUCK) return TYPE_KNIT_TUCK;
-		else if (b === TYPE_SPLIT_TO_BACK) return TYPE_SPLIT_TO_BACK;
+		else if (b === TYPE_SPLIT_TO_BACK_POS) return TYPE_SPLIT_TO_BACK_POS;
+		else if (b === TYPE_SPLIT_TO_BACK_NEG) return TYPE_SPLIT_TO_BACK_NEG;
 	} else if (a === TYPE_x_KNIT) {
 		if (b === TYPE_KNIT_x || b === TYPE_KNIT_KNIT) return TYPE_KNIT_KNIT;
 		else if (b === TYPE_TUCK_x || b === TYPE_TUCK_KNIT) return TYPE_TUCK_KNIT;
-		else if (b === TYPE_SPLIT_TO_FRONT) return TYPE_SPLIT_TO_FRONT;
+		else if (b === TYPE_SPLIT_TO_FRONT_POS) return TYPE_SPLIT_TO_FRONT_POS;
+		else if (b === TYPE_SPLIT_TO_FRONT_NEG) return TYPE_SPLIT_TO_FRONT_NEG;
 	} else if (a === TYPE_TUCK_x) {
 		if      (b === TYPE_x_KNIT || b === TYPE_TUCK_KNIT) return TYPE_TUCK_KNIT;
 		else if (b === TYPE_x_TUCK || b === TYPE_TUCK_TUCK) return TYPE_TUCK_TUCK;
@@ -178,10 +182,14 @@ function merge_types(a,b) {
 		if (b === TYPE_TUCK_x || b === TYPE_x_KNIT) return TYPE_TUCK_KNIT;
 	} else if (a === TYPE_TUCK_TUCK) {
 		if (b === TYPE_TUCK_x || b === TYPE_x_TUCK) return TYPE_TUCK_TUCK;
-	} else if (a === TYPE_SPLIT_TO_BACK) {
-		if (b === TYPE_SPLIT_TO_BACK || b === TYPE_KNIT_x) return TYPE_SPLIT_TO_BACK;
-	} else if (a === TYPE_SPLIT_TO_FRONT) {
-		if (b === TYPE_SPLIT_TO_FRONT || b === TYPE_x_KNIT) return TYPE_SPLIT_TO_FRONT;
+	} else if (a === TYPE_SPLIT_TO_BACK_POS) {
+		if (b === TYPE_SPLIT_TO_BACK_POS || b === TYPE_KNIT_x) return TYPE_SPLIT_TO_BACK_POS;
+	} else if (a === TYPE_SPLIT_TO_BACK_NEG) {
+		if (b === TYPE_SPLIT_TO_BACK_NEG || b === TYPE_KNIT_x) return TYPE_SPLIT_TO_BACK_NEG;
+	} else if (a === TYPE_SPLIT_TO_FRONT_POS) {
+		if (b === TYPE_SPLIT_TO_FRONT_POS || b === TYPE_x_KNIT) return TYPE_SPLIT_TO_FRONT_POS;
+	} else if (a === TYPE_SPLIT_TO_FRONT_NEG) {
+		if (b === TYPE_SPLIT_TO_FRONT_NEG || b === TYPE_x_KNIT) return TYPE_SPLIT_TO_FRONT_NEG;
 	}
 
 	//return 'null' if no merge possible:
@@ -1041,7 +1049,7 @@ function knitoutToPasses(knitout, knitoutFile) {
 			//make sure that this is a valid operation, and fill in proper OP:
 			let type;
 			if (cs.length !== 0) { //split case
-				type = (n.isFront() ? TYPE_SPLIT_TO_BACK : TYPE_SPLIT_TO_FRONT);
+				type = (n.isFront() ? (d === '+' ? TYPE_SPLIT_TO_BACK_POS: TYPE_SPLIT_TO_BACK_NEG) : (d === '+' ? TYPE_SPLIT_TO_FRONT_POS : TYPE_SPLIT_TO_FRONT_NEG));
 				op = OP_SPLIT;
 			} else { //xfer case
 				d = ""; //xfer is directionless
