@@ -423,6 +423,7 @@ let carrierDistance = 2.5;
 let leftFloor = true,
 	rightFloor = true;
 
+let xferDirection = 'order-based-direction'; //whether direction of xfer passes is based on the order of the needles (e.g. ascending order => positive, descending order => negative), or based on the bed that is being xferred from
 
 //convert knitout code (read as a utf8 string) to a sequence of unified passes:
 // returns {headers, passes}
@@ -436,7 +437,7 @@ function knitoutToPasses(knitout, knitoutFile) {
 	let lines = knitout.split('\n');
 	let lineIdx = 0;
 
-	//check for windows-style line endings:
+	// check for windows-style line endings:
 	let complainAboutLineEndings = 0;
 	for (let i = 0; i < lines.length; ++i) {
 		if (lines[i].endsWith('\r')) {
@@ -637,7 +638,7 @@ function knitoutToPasses(knitout, knitoutFile) {
 				else console.assert(false, "Passes with carriers have either LEFT or RIGHT direction.");
 
 				for (let slot in slotCs) {
-					let info = { //TODO: decide whether should have 100 or 0 roller advance for soft misses
+					let info = {
 						type:TYPE_SOFT_MISS,
 						slots:{},
 						racking:racking,
@@ -790,9 +791,27 @@ function knitoutToPasses(knitout, knitoutFile) {
 			}
 		});
 		if (inInfo) {
-			if (JSON.stringify(inInfo.cs) !== JSON.stringify(cs)) throw `${knitoutFile}:${lineIdx+1} ERROR: first use of carriers ${JSON.stringify(cs)} doesn't match in info ${JSON.stringify(inInfo)}`;
+			let carrierMatch = cs.some(c => inInfo.cs.includes(c));
+			if (!carrierMatch) throw `${knitoutFile}:${lineIdx+1} ERROR: first use of carriers ${JSON.stringify(cs)} doesn't match in info ${JSON.stringify(inInfo)}`;
+			
 			if (inInfo.op === 'in') {
-				info.gripper = GRIPPER_IN;
+				if (info.direction !== DIRECTION_RIGHT) {
+					let in_info = {
+						type:TYPE_SOFT_MISS,
+						slots: {},
+						sizes:{},
+						racking: info.racking,
+						roller: 0,
+						speed: info.speed,
+						carriers: info.carriers,
+						direction:DIRECTION_RIGHT,
+						gripper:GRIPPER_IN
+					};
+
+					in_info.slots[Object.keys(info.slots)[0]] = OP_SOFT_MISS;
+		
+					merge(new Pass(in_info));
+				} else info.gripper = GRIPPER_IN;
 			} else {
 				console.assert(false, "inInfo.op must be 'in'");
 			}
@@ -908,7 +927,7 @@ function knitoutToPasses(knitout, knitoutFile) {
 
 			merge(new Pass(info));
 
-			//remove carriers from active set:
+			// remove carriers from active set:
 			cs.forEach(function(c){
 				delete carriers[c];
 			});
@@ -937,9 +956,13 @@ function knitoutToPasses(knitout, knitoutFile) {
 			if (args.length !== 0) throw `${knitoutFile}:${lineIdx+1} ERROR: x-end-pass takes no arguments.`;
 			endPending = true;
 		} else if (op === 'x-xfer-style') {
-			if (args.length !== 1) throw `${knitoutFile}:${lineIdx+1} ERROR: x-xfer-style takes one argument.`;
-			if (!(args[0] === 'four-pass' || args[0] === 'two-pass')) throw `${knitoutFile}:${lineIdx+1} ERROR: x-xfer-style must be 'four-pass' or 'two-pass'.`;
-			xferStyle = args[0];
+			if (!(args.length === 1 || args.length === 2)) throw `${knitoutFile}:${lineIdx+1} ERROR: x-xfer-style takes one to two argument(s).`;
+			let xferStyles = ['four-pass', 'two-pass', 'order-based-direction', 'bed-based-direction'];
+			for (let i in args) {
+				if (!xferStyles.includes(args[i])) throw `${knitoutFile}:${lineIdx+1} ERROR: x-xfer-style must be 'four-pass', 'two-pass', 'order-based-direction', or 'bed-based-direction'.`;
+				if (args[i] === 'two-pass' || args[i] === 'four-pass') xferStyle = args[i];
+				else xferDirection = args[i];
+			}
 		} else if (op === 'x-speed-number') {
 			if (args.length !== 1) throw `${knitoutFile}:${lineIdx+1} ERROR: x-speed-number takes one argument.`;
 			if (!/^[+-]?\d*\.?\d+$/.test(args[0])) throw `${knitoutFile}:${lineIdx+1} ERROR: x-speed-number must be a number.`;
@@ -1223,7 +1246,7 @@ function passesToKCode(headers, passes, kcFile) {
 			carriageLeft:leftStop,
 			carriageRight:rightStop,
 			type:'Kn-Kn',
-			speed:300, //TODO: might make this faster since no knitting is happening
+			speed:400, //made this faster since no knitting is happening
 			roller:0,
 			comment:"automatically inserted carriage move"
 		};
@@ -1309,6 +1332,8 @@ function passesToKCode(headers, passes, kcFile) {
 		if (pass.type === TYPE_XFER_FOUR_PASS || pass.type === TYPE_XFER_TWO_PASS) {
 			//this code is going to split the transfers into several passes, using this handy helper:
 			function makeXferPass(direction, fromBed, toBed, checkNeedleFn, comment) {
+				if (xferDirection === 'bed-based-direction') direction = (fromBed === 'f' ? '+' : '-'); //option to comply with kniterate manual (claims that xfers work best when pos direction if xfer from front bed, and neg direction if xfer from back bed)
+
 				let xpass = {
 					RACK:pass.racking,
 					type:'Tr-Rr',
@@ -1329,9 +1354,9 @@ function passesToKCode(headers, passes, kcFile) {
 
 				if (fromBed === 'f' && toBed === 'b' && direction === DIRECTION_RIGHT) {
 					xpass.type = 'Tr-Rr';
-				} else if (fromBed === 'f' && toBed === 'b' && direction === DIRECTION_LEFT) {
+				} else if (fromBed === 'f' && toBed === 'b' && direction === DIRECTION_LEFT) { //not applicable if xferDirection === 'bed-based-direction'
 					xpass.type = 'Tr-Rl';
-				} else if (fromBed === 'b' && toBed === 'f' && direction === DIRECTION_RIGHT) {
+				} else if (fromBed === 'b' && toBed === 'f' && direction === DIRECTION_RIGHT) { //not applicable if xferDirection === 'bed-based-direction'
 					xpass.type = 'Rr-Tr';
 				} else if (fromBed === 'b' && toBed === 'f' && direction === DIRECTION_LEFT) {
 					xpass.type = 'Rl-Tr';
@@ -1492,9 +1517,11 @@ function passesToKCode(headers, passes, kcFile) {
 				//roller:100,
 				roller: pass.roller,
 			};
-			if (pass.comment) kpass.comment = pass.comment; //TODO: add header for pause/alert on screen
+			if (pass.comment) kpass.comment = pass.comment;
 			if (pass.pause && pass.pauseMessage) kpass.pauseMessage = pass.pauseMessage;
-			if (pass.gripper === GRIPPER_OUT) {
+			if (pass.gripper === GRIPPER_IN) {
+				kpass.comment = (kpass.comment || "") + "; carrier in";
+			} else if (pass.gripper === GRIPPER_OUT) {
 				kpass.comment = (kpass.comment || "") + "; carrier out";
 			}
 
@@ -1504,11 +1531,13 @@ function passesToKCode(headers, passes, kcFile) {
 				console.assert(pass.direction === DIRECTION_NONE);
 				kpass.direction = nextDirection;
 			} else {
-				console.assert(pass.carriers.length === 1, "expecting zero or one carriers per pass");
 				kpass.direction = pass.direction;
 
-				kpass.carrier = pass.carriers[0];
-				console.assert(kpass.carrier in carrierAt, "carrier '" + kpass.carrier + "' should be in carrierAt list.");
+				kpass.carriers = pass.carriers; //*
+
+				for (let c in kpass.carriers) {
+					console.assert(kpass.carriers[c] in carrierAt, "carrier '" + kpass.carriers[c] + "' should be in carrierAt list.");
+				}
 
 				//function to 'bump' a carrier over so it doesn't stack:
 				function bump(carrier, stop, add) {
@@ -1545,31 +1574,48 @@ function passesToKCode(headers, passes, kcFile) {
 						}
 					}
 					if (newStop !== stop) {
-						console.log("Note: bumpped carrier " + carrier + " from " + stop + " to " + newStop + " to avoid other carriers.");
+						// console.log("Note: bumped carrier " + carrier + " from " + stop + " to " + newStop + " to avoid other carriers."); //go back! //!
 					}
 					return newStop;
 				}
 
 				//set carrier stopping points:
+				kpass.carriersRight = {};
+				kpass.carriersLeft = {};
 				if (kpass.direction === DIRECTION_LEFT) {
-					kpass.carrierRight = carrierAt[kpass.carrier];
-					kpass.carrierLeft = pass.minSlot + slotToNeedle - carrierDistance;
+					let defaultLeft = pass.minSlot + slotToNeedle - carrierDistance;
+
+					for (let c of kpass.carriers) {
+						kpass.carriersRight[c] = carrierAt[c];
+						kpass.carriersLeft[c] = defaultLeft;
+					}
+
 					if (pass.gripper === GRIPPER_OUT) {
-						//console.log("Carrier: " + JSON.stringify(pass.carriers[0]));
-						const parkingSpot = CARRIER_PARKING[parseInt(pass.carriers[0])-1];
-						console.log("Will park " + pass.carriers[0] + " at " + kpass.carrierLeft);
-						console.assert(parkingSpot <= kpass.carrierLeft, "Parking spot should be left of any slots.");
-						kpass.carrierLeft = parkingSpot;
+						for (let c of kpass.carriers) {
+							const parkingSpot = CARRIER_PARKING[parseInt(c)-1];
+							console.log("Will park " + c + " at " + kpass.carriersLeft[c]);
+							console.assert(parkingSpot <= kpass.carriersLeft[c], "Parking spot should be left of any slots.");
+							kpass.carriersLeft[c] = parkingSpot;
+							carrierAt[c] = kpass.carriersLeft[c]; //?
+						}
 					} else {
 						//don't bump when parking carriers:
-						kpass.carrierLeft = bump(kpass.carrier, kpass.carrierLeft, -carrierSpacing); //bump over to avoid stacking
+						for (let c of Object.keys(kpass.carriersLeft)) {
+							kpass.carriersLeft[c] = bump(c, kpass.carriersLeft[c], -carrierSpacing); //bump over to avoid stacking
+							carrierAt[c] = kpass.carriersLeft[c];
+						}
 					}
-					carrierAt[kpass.carrier] = kpass.carrierLeft;
 				} else { console.assert(kpass.direction === DIRECTION_RIGHT);
-					kpass.carrierLeft = carrierAt[kpass.carrier];
-					kpass.carrierRight = pass.maxSlot + slotToNeedle + carrierDistance;
-					kpass.carrierRight = bump(kpass.carrier, kpass.carrierRight, carrierSpacing); //bump over to avoid stacking
-					carrierAt[kpass.carrier] = kpass.carrierRight;
+					let defaultRight = pass.maxSlot + slotToNeedle + carrierDistance;
+					for (let c of kpass.carriers) {
+						kpass.carriersLeft[c] = carrierAt[c];
+						kpass.carriersRight[c] = defaultRight;
+					}
+
+					for (let c of Object.keys(kpass.carriersRight)) {
+						kpass.carriersRight[c] = bump(c, kpass.carriersRight[c], carrierSpacing); //bump over to avoid stacking
+						carrierAt[c] = kpass.carriersRight[c];
+					}
 				}
 			}
 
@@ -1587,21 +1633,21 @@ function passesToKCode(headers, passes, kcFile) {
 			if (kpass.direction === DIRECTION_LEFT) {
 				//starting point:
 				rightStop = Math.max(rightStop, pass.maxSlot + slotToNeedle + carrierDistance);
-				if (pass.carriers.length !== 0) rightStop = Math.max(rightStop, kpass.carrierRight);
+				if (pass.carriers.length !== 0) rightStop = Math.max(rightStop, ...Object.values(kpass.carriersRight));
 				//shift previous pass's stop as well:
 				if (kprev) kprev.carriageRight = rightStop;
 				//stopping point:
 				leftStop = pass.minSlot + slotToNeedle - carrierDistance;
-				if (kpass.carrierLeft) leftStop = Math.min(leftStop, kpass.carrierLeft);
+				if (kpass.carriersLeft) leftStop = Math.min(leftStop, ...Object.values(kpass.carriersLeft));
 			} else {console.assert(kpass.direction === DIRECTION_RIGHT);
 				//starting point:
 				leftStop = Math.min(leftStop, pass.minSlot + slotToNeedle - carrierDistance);
-				if (pass.carriers.length !== 0) leftStop = Math.min(leftStop, kpass.carrierLeft);
+				if (pass.carriers.length !== 0) leftStop = Math.min(leftStop, ...Object.values(kpass.carriersLeft));
 				//shift previous pass's stop as well:
 				if (kprev) kprev.carriageLeft = leftStop;
 				//stopping point:
 				rightStop = pass.maxSlot + slotToNeedle + carrierDistance;
-				if (kpass.carrierRight) rightStop = Math.max(rightStop, kpass.carrierRight);
+				if (kpass.carriersRight) rightStop = Math.max(rightStop, ...Object.values(kpass.carriersRight));
 			}
 			kpass.carriageLeft = leftStop;
 			kpass.carriageRight = rightStop;
@@ -1647,7 +1693,6 @@ function passesToKCode(headers, passes, kcFile) {
 
 	function out(x) {
 		kcode.push(x);
-		//console.log(x);
 	}
 
 	out("HOME");
@@ -1655,7 +1700,7 @@ function passesToKCode(headers, passes, kcFile) {
 	out(`// ${kcFile}`); //add name of .kc file as comment in header, since it needs to be changed to 'command.kc' for the machine to read it (so can remember original name)
 
 	let lastRACK = 0.0;
-	kcodePasses.forEach(function(kpass){
+	kcodePasses.forEach(function(kpass, index){
 		//console.log("Doing:", kpass); //DEBUG
 		if ('pauseMessage' in kpass) {
 			out(kpass.pauseMessage);
@@ -1679,24 +1724,48 @@ function passesToKCode(headers, passes, kcFile) {
 		//make into an index into the needle selection string:
 		const carriageLeft = kpass.carriageLeft + 15.5;
 		const carriageRight = kpass.carriageRight + 15.5;
-		if ('carrier' in kpass) {
-			op += " " + kpass.carrier;
-			console.assert(kpass.carrierLeft < kpass.carrierRight, "properly ordered carrier stops");
-			console.assert(kpass.carrierLeft - Math.floor(kpass.carrierLeft) === 0.5, "carrier stop is properly fractional");
-			console.assert(kpass.carrierRight - Math.floor(kpass.carrierRight) === 0.5, "carrier stop is properly fractional");
-			console.assert(kpass.carriageLeft <= kpass.carrierLeft, "carriage comes before carrier on the left");
-			console.assert(kpass.carrierRight <= kpass.carriageRight, "carrier comes before carriage on the right", kpass); //DEBUG
-			//make into an index into the needle selection string:
-			const carrierLeft = kpass.carrierLeft + 15.5;
-			const carrierRight = kpass.carrierRight + 15.5;
+		if ('carriers' in kpass) {
+			op += " " + kpass.carriers[0]; //TODO: determine if should add both carriers to op //*
+			let leftMostCarrier = Math.min(...Object.values(kpass.carriersLeft));
+			let rightMostCarrier = Math.max(...Object.values(kpass.carriersRight));
+			console.assert(leftMostCarrier < rightMostCarrier, `properly ordered carrier stops (leftMostCarrier: ${leftMostCarrier} should be less than rightMostCarrier: ${rightMostCarrier}; index: ${index}; pass direction: ${kpass.direction})`);
+			console.assert(leftMostCarrier - Math.floor(leftMostCarrier) === 0.5, "carrier stop is properly fractional");
+			console.assert(rightMostCarrier - Math.floor(rightMostCarrier) === 0.5, "carrier stop is properly fractional");
+			console.assert(kpass.carriageLeft <= leftMostCarrier, "carriage comes before carrier on the left");
+			console.assert(rightMostCarrier <= kpass.carriageRight, "carrier comes before carriage on the right", kpass); //DEBUG
+
 			//insert punctuation:
 			FRNT = FRNT.substr(0,carriageRight) + '\\' + FRNT.substr(carriageRight);
-			FRNT = FRNT.substr(0,carrierRight) + kpass.carrier + FRNT.substr(carrierRight);
-			FRNT = FRNT.substr(0,carrierLeft) + kpass.carrier + FRNT.substr(carrierLeft);
+
+			//make into an index into the needle selection string:
+			for (let c of Object.keys(kpass.carriersRight).reverse()) {
+			// for (let c = kpass.carriersRight.length-1; c >= 0; --c) {
+				const carrierRight = kpass.carriersRight[c] + 15.5;
+				FRNT = FRNT.substr(0,carrierRight) + c + FRNT.substr(carrierRight);
+			}
+
+			for (let c of Object.keys(kpass.carriersLeft).reverse()) {
+			// for (let c = kpass.carriersLeft.length-1; c >= 0; --c) {
+				const carrierLeft = kpass.carriersLeft[c] + 15.5;
+				FRNT = FRNT.substr(0,carrierLeft) + c + FRNT.substr(carrierLeft);
+			}
+
 			FRNT = FRNT.substr(0,carriageLeft) + '/' + FRNT.substr(carriageLeft);
+
 			REAR = REAR.substr(0,carriageRight) + '\\' + REAR.substr(carriageRight);
-			REAR = REAR.substr(0,carrierRight) + kpass.carrier + REAR.substr(carrierRight);
-			REAR = REAR.substr(0,carrierLeft) + kpass.carrier + REAR.substr(carrierLeft);
+
+			for (let c of Object.keys(kpass.carriersRight).reverse()) {
+			// for (let c = kpass.carriersRight.length-1; c >= 0; --c) {
+				const carrierRight = kpass.carriersRight[c] + 15.5;
+				REAR = REAR.substr(0,carrierRight) + c + REAR.substr(carrierRight);
+			}
+			
+			for (let c of Object.keys(kpass.carriersLeft).reverse()) {
+			// for (let c = kpass.carriersLeft.length-1; c >= 0; --c) {
+				const carrierLeft = kpass.carriersLeft[c] + 15.5;
+				REAR = REAR.substr(0,carrierLeft) + c + REAR.substr(carrierLeft);
+			}
+
 			REAR = REAR.substr(0,carriageLeft) + '/' + REAR.substr(carriageLeft);
 		} else {
 			op += " " + "0";
