@@ -423,6 +423,7 @@ let carrierDistance = 2.5;
 let leftFloor = true,
 	rightFloor = true;
 
+let xferDirection = 'order-based-direction'; //whether direction of xfer passes is based on the order of the needles (e.g. ascending order => positive, descending order => negative), or based on the bed that is being xferred from
 
 //convert knitout code (read as a utf8 string) to a sequence of unified passes:
 // returns {headers, passes}
@@ -436,7 +437,7 @@ function knitoutToPasses(knitout, knitoutFile) {
 	let lines = knitout.split('\n');
 	let lineIdx = 0;
 
-	//check for windows-style line endings:
+	// check for windows-style line endings:
 	let complainAboutLineEndings = 0;
 	for (let i = 0; i < lines.length; ++i) {
 		if (lines[i].endsWith('\r')) {
@@ -637,7 +638,7 @@ function knitoutToPasses(knitout, knitoutFile) {
 				else console.assert(false, "Passes with carriers have either LEFT or RIGHT direction.");
 
 				for (let slot in slotCs) {
-					let info = { //TODO: decide whether should have 100 or 0 roller advance for soft misses
+					let info = {
 						type:TYPE_SOFT_MISS,
 						slots:{},
 						racking:racking,
@@ -937,9 +938,13 @@ function knitoutToPasses(knitout, knitoutFile) {
 			if (args.length !== 0) throw `${knitoutFile}:${lineIdx+1} ERROR: x-end-pass takes no arguments.`;
 			endPending = true;
 		} else if (op === 'x-xfer-style') {
-			if (args.length !== 1) throw `${knitoutFile}:${lineIdx+1} ERROR: x-xfer-style takes one argument.`;
-			if (!(args[0] === 'four-pass' || args[0] === 'two-pass')) throw `${knitoutFile}:${lineIdx+1} ERROR: x-xfer-style must be 'four-pass' or 'two-pass'.`;
-			xferStyle = args[0];
+			if (!(args.length === 1 || args.length === 2)) throw `${knitoutFile}:${lineIdx+1} ERROR: x-xfer-style takes one to two argument(s).`;
+			let xferStyles = ['four-pass', 'two-pass', 'order-based-direction', 'bed-based-direction'];
+			for (let i in args) {
+				if (!xferStyles.includes(args[i])) throw `${knitoutFile}:${lineIdx+1} ERROR: x-xfer-style must be 'four-pass', 'two-pass', 'order-based-direction', or 'bed-based-direction'.`;
+				if (args[i] === 'two-pass' || args[i] === 'four-pass') xferStyle = args[i];
+				else xferDirection = args[i];
+			}
 		} else if (op === 'x-speed-number') {
 			if (args.length !== 1) throw `${knitoutFile}:${lineIdx+1} ERROR: x-speed-number takes one argument.`;
 			if (!/^[+-]?\d*\.?\d+$/.test(args[0])) throw `${knitoutFile}:${lineIdx+1} ERROR: x-speed-number must be a number.`;
@@ -1223,7 +1228,7 @@ function passesToKCode(headers, passes, kcFile) {
 			carriageLeft:leftStop,
 			carriageRight:rightStop,
 			type:'Kn-Kn',
-			speed:300, //TODO: might make this faster since no knitting is happening
+			speed:400, //made this faster since no knitting is happening
 			roller:0,
 			comment:"automatically inserted carriage move"
 		};
@@ -1309,6 +1314,8 @@ function passesToKCode(headers, passes, kcFile) {
 		if (pass.type === TYPE_XFER_FOUR_PASS || pass.type === TYPE_XFER_TWO_PASS) {
 			//this code is going to split the transfers into several passes, using this handy helper:
 			function makeXferPass(direction, fromBed, toBed, checkNeedleFn, comment) {
+				if (xferDirection === 'bed-based-direction') direction = (fromBed === 'f' ? '+' : '-'); //option to comply with kniterate manual (claims that xfers work best when pos direction if xfer from front bed, and neg direction if xfer from back bed)
+
 				let xpass = {
 					RACK:pass.racking,
 					type:'Tr-Rr',
@@ -1329,9 +1336,9 @@ function passesToKCode(headers, passes, kcFile) {
 
 				if (fromBed === 'f' && toBed === 'b' && direction === DIRECTION_RIGHT) {
 					xpass.type = 'Tr-Rr';
-				} else if (fromBed === 'f' && toBed === 'b' && direction === DIRECTION_LEFT) {
+				} else if (fromBed === 'f' && toBed === 'b' && direction === DIRECTION_LEFT) { //not applicable if xferDirection === 'bed-based-direction'
 					xpass.type = 'Tr-Rl';
-				} else if (fromBed === 'b' && toBed === 'f' && direction === DIRECTION_RIGHT) {
+				} else if (fromBed === 'b' && toBed === 'f' && direction === DIRECTION_RIGHT) { //not applicable if xferDirection === 'bed-based-direction'
 					xpass.type = 'Rr-Tr';
 				} else if (fromBed === 'b' && toBed === 'f' && direction === DIRECTION_LEFT) {
 					xpass.type = 'Rl-Tr';
@@ -1492,7 +1499,7 @@ function passesToKCode(headers, passes, kcFile) {
 				//roller:100,
 				roller: pass.roller,
 			};
-			if (pass.comment) kpass.comment = pass.comment; //TODO: add header for pause/alert on screen
+			if (pass.comment) kpass.comment = pass.comment;
 			if (pass.pause && pass.pauseMessage) kpass.pauseMessage = pass.pauseMessage;
 			if (pass.gripper === GRIPPER_OUT) {
 				kpass.comment = (kpass.comment || "") + "; carrier out";
@@ -1545,7 +1552,7 @@ function passesToKCode(headers, passes, kcFile) {
 						}
 					}
 					if (newStop !== stop) {
-						console.log("Note: bumpped carrier " + carrier + " from " + stop + " to " + newStop + " to avoid other carriers.");
+						console.log("Note: bumped carrier " + carrier + " from " + stop + " to " + newStop + " to avoid other carriers.");
 					}
 					return newStop;
 				}

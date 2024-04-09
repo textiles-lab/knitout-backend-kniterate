@@ -1,3 +1,6 @@
+.vscode/
+ignore/
+
 /*.k
 /*.kc
 extras/*.k
@@ -8,3 +11,5 @@ extras/*.css
 extras/test.js
 in-k/
 out-kc/
+in/
+out/
